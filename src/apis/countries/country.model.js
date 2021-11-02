@@ -30,3 +30,7 @@ const CountrySchema = new mongoose.Schema({
 const Country = mongoose.model("countries", CountrySchema);
 
 module.exports = Country;
+
+module.exports.get = function (callback, limit) {
+  Country.find(callback).limit(limit);
+}

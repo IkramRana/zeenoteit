@@ -13,7 +13,6 @@ const register = async (req, res) => {
         const validationRule = {
             'email': 'required|email',
             'password': 'required',
-            'country_id': 'required',
             'phone_number': 'required',
             'isNumberVerified': 'required',
         }
@@ -28,7 +27,8 @@ const register = async (req, res) => {
         });
         
         // *extract param from request body
-        const { email, password, country_id, phone_number, isNumberVerified } = req.body;
+        const { email, password, phone_number, isNumberVerified } = req.body;
+
         // *encrypt incoming password
         const hashPassword = await encryptText(password);
         
@@ -36,7 +36,6 @@ const register = async (req, res) => {
         let obj = {
             email: email,
             password: hashPassword,
-            country_id: country_id,
             phone_number: phone_number,
             isNumberVerified: isNumberVerified,
         }
@@ -45,7 +44,10 @@ const register = async (req, res) => {
         const user = new userModel(obj); 
         await user.save();
 
-        return res.send(user);
+        return res.status(200).json({
+            status: true,
+            message: "Registration Successful",
+        })
     } catch (err) {
         let error = errorHandler.handle(err)
         return res.status(500).json(error)
@@ -91,7 +93,7 @@ const login = async (req, res) => {
             //* if password / token successful
             if(compare_result && token){
                 return res.json({ 
-                    userName: result.name,
+                    status: true,
                     token: token
                 });
             } else {

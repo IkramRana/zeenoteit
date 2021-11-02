@@ -10,5 +10,6 @@ let router = express.Router();
 
 //post
 router.post('/add-country', upload.uploadImg, countryCtrl.addCountry);
+router.get('/countries', countryCtrl.getCountries);
 
 module.exports = router;

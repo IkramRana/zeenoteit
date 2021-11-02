@@ -23,10 +23,15 @@ const addCountry = async (req, res) => {
             }
         });
 
+        // *split image path
+        let imageDestination = req.file.destination;
+        let split = imageDestination.split('/');
+        let imagePath = split[1]+'/'+split[2]+'/'+req.file.filename;
+
         // *create obj for db insert
         let obj = {
             code: req.body.code,
-            image_path: req.file.path,
+            image_path: imagePath,
             number_length: req.body.number_length,
         };
 
@@ -53,6 +58,22 @@ const addCountry = async (req, res) => {
     }
 }
 
+const getCountries = async (req, res) => {
+    countryModel.get(function (err, countries) {
+        if (err) {
+            res.json({
+                status: "error",
+                message: err,
+            });
+        }
+        res.json({
+            status: "success",
+            data: countries
+        });
+    });
+}
+
 module.exports = {
     addCountry: addCountry,
+    getCountries: getCountries,
 }

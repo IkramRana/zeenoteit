@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const UserSchema = new mongoose.Schema({
   email: {
     type: String,
+    unique: true,
     maxlength: 100,
   },
   password: {
@@ -10,11 +11,6 @@ const UserSchema = new mongoose.Schema({
     maxlength: 100,
     unique: true,
     required: true,
-  },
-  country_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'countries',
   },
   phone_number: {
     type: String,
