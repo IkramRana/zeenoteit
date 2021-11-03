@@ -8,7 +8,6 @@ const TaskSchema = new mongoose.Schema({
   title: {
     type: String,
     maxlength: 255,
-    unique: true,
     required: true,
   },
   color: {
@@ -24,6 +23,7 @@ const TaskSchema = new mongoose.Schema({
     default: Date.now
   },
 });
+
 
 const Task = mongoose.model("user_tasks", TaskSchema);
 

@@ -12,7 +12,6 @@ const SubTaskSchema = new mongoose.Schema({
   title: {
     type: String,
     maxlength: 255,
-    unique: true,
     required: true,
   },
   isCompleted: {

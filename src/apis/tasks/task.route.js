@@ -10,5 +10,6 @@ let router = express.Router();
 
 //post
 router.post('/add-task', auth.validate, taskCtrl.addTask);
+router.get('/user-tasks', auth.validate, taskCtrl.getUserTasks);
 
 module.exports = router;
