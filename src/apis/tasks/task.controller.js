@@ -84,6 +84,7 @@ const getUserTasks = async (req, res) => {
         ])
 
         return res.status(200).json({
+            status: true,
             message: 'All Tasks',
             data: result
         })

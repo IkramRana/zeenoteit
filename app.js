@@ -8,24 +8,20 @@ var cors = require('cors');
 require('dotenv').config();
 var appRoutes = require('./src/routes/app.route');
 
-//mongoose.connect('mongodb://localhost:27017/ze_note_it', {
-mongoose.connect('mongodb+srv://zeenoteit:zeenoteit123@cluster0.dlvnj.mongodb.net/zeenoteit?retryWrites=true&w=majority', {
+// *db connect
+mongoose.connect(process.env.DB_URL, {
   useNewUrlParser: true,
-  //useCreateIndex: true,
   useUnifiedTopology: true,
-  //useFindAndModify: false
-})
-  .then(async res => {
+}).then(async res => {
     console.log("DB Connected Successfully")
-  })
-  .catch(err => {
+}).catch(err => {
     console.log('err', err);
     console.log('Unable to connect with DB')
-  })
+})
 
 var app = express();
 
-// view engine setup
+// *view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 

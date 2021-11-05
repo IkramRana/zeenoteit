@@ -54,6 +54,22 @@ const addQuote = async (req, res) => {
     }
 }
 
+const getQuote = async (req, res) => {
+    try {
+        let result = await quoteModel.find({ user_id: req.user._id }, { creationAt:0,updatedAt:0,__v: 0 });
+
+        return res.status(200).json({
+            status: true,
+            message: 'User Quote',
+            data: result
+        })
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
 module.exports = {
     addQuote: addQuote,
+    getQuote: getQuote,
 }

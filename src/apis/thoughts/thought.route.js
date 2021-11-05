@@ -10,5 +10,6 @@ let router = express.Router();
 
 //post
 router.post('/add-thought', auth.validate, thoughtCtrl.addThought);
+router.get('/get-thought', auth.validate, thoughtCtrl.getThought);
 
 module.exports = router;

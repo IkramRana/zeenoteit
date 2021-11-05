@@ -50,7 +50,10 @@ const register = async (req, res) => {
         })
     } catch (err) {
         let error = errorHandler.handle(err)
-        return res.status(500).json(error)
+        return res.status(500).json({
+            status: false,
+            message: error
+        })
     }
 }
 

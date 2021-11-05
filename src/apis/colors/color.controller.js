@@ -49,6 +49,22 @@ const addColor = async (req, res) => {
     }
 }
 
+const getColors = async (req, res) => {
+    try {
+        let result = await colorModel.find({}, { creationAt:0,updatedAt:0,__v: 0 });
+
+        return res.status(200).json({
+            status: true,
+            message: 'All Colors',
+            data: result
+        })
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
 module.exports = {
     addColor: addColor,
+    getColors: getColors,
 }

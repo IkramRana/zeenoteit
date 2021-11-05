@@ -9,5 +9,6 @@ let router = express.Router();
 
 //post
 router.post('/add-color', colorCtrl.addColor);
+router.get('/get-colors', colorCtrl.getColors);
 
 module.exports = router;
