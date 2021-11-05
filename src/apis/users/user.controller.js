@@ -7,56 +7,6 @@ var { validator } = require('../../util/helper');
 var errorHandler = require('../../util/errorHandler');
 
 
-const register = async (req, res) => {
-    try {
-        // *request body validation
-        const validationRule = {
-            'email': 'required|email',
-            'password': 'required',
-            'phone_number': 'required',
-            'isNumberVerified': 'required',
-        }
-    
-        validator(req.body, validationRule, {}, (err, status) => {
-            if (!status) {
-                return res.status(412).json({
-                    status: false, responseCode: 412,
-                    message: 'Validation failed', data: err
-                })
-            }
-        });
-        
-        // *extract param from request body
-        const { email, password, phone_number, isNumberVerified } = req.body;
-
-        // *encrypt incoming password
-        const hashPassword = await encryptText(password);
-        
-        // *create obj for db insert
-        let obj = {
-            email: email,
-            password: hashPassword,
-            phone_number: phone_number,
-            isNumberVerified: isNumberVerified,
-        }
-        
-        // *insert
-        const user = new userModel(obj); 
-        await user.save();
-
-        return res.status(200).json({
-            status: true,
-            message: "Registration Successful",
-        })
-    } catch (err) {
-        let error = errorHandler.handle(err)
-        return res.status(500).json({
-            status: false,
-            message: error
-        })
-    }
-}
-
 const login = async (req, res) => {
     try {
         // *request body validation
@@ -112,7 +62,126 @@ const login = async (req, res) => {
     }
 }
 
+const register = async (req, res) => {
+    try {
+        // *request body validation
+        const validationRule = {
+            'email': 'required|email',
+            'password': 'required',
+            'phone_number': 'required',
+            'isNumberVerified': 'required',
+        }
+    
+        validator(req.body, validationRule, {}, (err, status) => {
+            if (!status) {
+                return res.status(412).json({
+                    status: false, responseCode: 412,
+                    message: 'Validation failed', data: err
+                })
+            }
+        });
+        
+        // *extract param from request body
+        const { email, password, phone_number, isNumberVerified } = req.body;
+
+        // *encrypt incoming password
+        const hashPassword = await encryptText(password);
+        
+        // *create obj for db insert
+        let obj = {
+            email: email,
+            password: hashPassword,
+            phone_number: phone_number,
+            isNumberVerified: isNumberVerified,
+        }
+        
+        // *insert
+        const user = new userModel(obj); 
+        await user.save();
+
+        return res.status(200).json({
+            status: true,
+            message: "Registration Successful",
+        })
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json({
+            status: false,
+            message: error
+        })
+    }
+}
+
+const verifyToken = async (req, res) => {
+    try {
+        let token = req.headers['x-access-token'] || req.headers.authorization;
+
+        // *if no token found, return response (without going to the next middleware)
+        if (!token) return res.status(401).json({ message: 'Access denied. No token provided.' });
+
+        if (token.startsWith('Bearer ')) {
+            // *Remove Bearer from string
+            token = token.slice(7, token.length);
+
+            const decoded = await jwt.verifyToken(token);
+
+            // *if can verify the token, set req.user and pass to next middleware
+            let result = await userModel.findOne({
+                _id: decoded.id
+            }, { 'reset_expiry': 0 });
+
+            if (result) {
+                return res.status(200).json({ message: 'verified' });
+            }
+            
+        }
+        return res.status(401).json({ message: 'Invalid token.' });
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json({
+            status: false,
+            message: error
+        })
+    }
+}
+
+const checkUserEmailAndPhone = async (req,res) => {
+    try {
+        
+        //* check if email exist
+        let emailCount = await userModel.find({ email: req.body.email }).count()
+
+        if(emailCount > 0){
+            return res.status(400).json({
+                status: false,
+                message: "Email Already Exist",
+            })
+        }
+        
+        //* check if phone exist
+        let phoneCount = await userModel.find({ phone_number: req.body.phone }).count()
+
+        if(phoneCount > 0){
+            return res.status(400).json({
+                status: false,
+                message: "Phone Number Already Exist",
+            })
+        }
+
+        return res.json({ 
+            status: true,
+            message: 'No User Found'
+        })
+
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
 module.exports = {
+    checkUserEmailAndPhone: checkUserEmailAndPhone,
+    verifyToken: verifyToken,
     register: register,
     login: login,
 }
