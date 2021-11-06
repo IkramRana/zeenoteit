@@ -10,6 +10,8 @@ const addQuote = async (req, res) => {
         // *request body validation
         const validationRule = {
             'quote': 'required|string',
+            'sponsor': 'required|string',
+            'author': 'required|string',
         }
     
         validator(req.body, validationRule, {}, (err, status) => {
@@ -25,6 +27,8 @@ const addQuote = async (req, res) => {
         let obj = {
             user_id: req.user._id,
             quote: req.body.quote,
+            sponsor: req.body.sponsor,
+            author: req.body.author,
         };
 
         // *get count of same quote
@@ -32,9 +36,7 @@ const addQuote = async (req, res) => {
         
         // *if code exist then update it else insert
         if(count > 0){
-            await quoteModel.updateOne({
-                'quote': req.body.quote
-            });
+            await quoteModel.updateOne(obj);
             res.status(200).json({
                 message: "Quote Updated Successfully",
             })

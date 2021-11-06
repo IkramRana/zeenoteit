@@ -11,6 +11,11 @@ const UserSchema = new mongoose.Schema({
     maxlength: 100,
     required: true,
   },
+  countryCode: {
+    type: String,
+    maxlength: 5,
+    required: true,
+  },
   phone_number: {
     type: String,
     maxlength: 25,

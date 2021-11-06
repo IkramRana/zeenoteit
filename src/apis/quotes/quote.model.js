@@ -8,6 +8,16 @@ const QuoteSchema = new mongoose.Schema({
   },
   quote: {
     type: String,
+    maxlength: 550,
+    required: true,
+  },
+  sponsor: {
+    type: String,
+    maxlength: 255,
+    required: true,
+  },
+  author: {
+    type: String,
     maxlength: 255,
     required: true,
   },

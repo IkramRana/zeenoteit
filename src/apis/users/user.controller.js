@@ -82,7 +82,7 @@ const register = async (req, res) => {
         });
         
         // *extract param from request body
-        const { email, password, phone_number, isNumberVerified } = req.body;
+        const { email, password, country_code ,phone_number, isNumberVerified } = req.body;
 
         // *encrypt incoming password
         const hashPassword = await encryptText(password);
@@ -91,6 +91,7 @@ const register = async (req, res) => {
         let obj = {
             email: email,
             password: hashPassword,
+            countryCode: country_code,
             phone_number: phone_number,
             isNumberVerified: isNumberVerified,
         }
@@ -114,28 +115,23 @@ const register = async (req, res) => {
 
 const verifyToken = async (req, res) => {
     try {
-        let token = req.headers['x-access-token'] || req.headers.authorization;
+        let token = req.body.token;
 
         // *if no token found, return response (without going to the next middleware)
         if (!token) return res.status(401).json({ message: 'Access denied. No token provided.' });
 
-        if (token.startsWith('Bearer ')) {
-            // *Remove Bearer from string
-            token = token.slice(7, token.length);
+        const decoded = await jwt.verifyToken(token);
 
-            const decoded = await jwt.verifyToken(token);
+        // *if can verify the token, set req.user and pass to next middleware
+        let result = await userModel.findOne({
+            _id: decoded.id
+        }, { 'reset_expiry': 0 });
 
-            // *if can verify the token, set req.user and pass to next middleware
-            let result = await userModel.findOne({
-                _id: decoded.id
-            }, { 'reset_expiry': 0 });
-
-            if (result) {
-                return res.status(200).json({ message: 'verified' });
-            }
-            
+        if (result) {
+            return res.status(200).json({ status: true,message: 'verified' });
         }
-        return res.status(401).json({ message: 'Invalid token.' });
+            
+        return res.status(401).json({ status: false,message: 'Invalid token.' });
     } catch (err) {
         let error = errorHandler.handle(err)
         return res.status(500).json({
