@@ -45,7 +45,7 @@ const addThought = async (req, res) => {
 
 const getThought = async (req, res) => {
     try {
-        let result = await thoughtModel.find({ user_id: req.user._id }, { creationAt:0,updatedAt:0,__v: 0 });
+        let result = await thoughtModel.find({ user_id: req.user._id }, { updatedAt:0,__v: 0 });
 
         return res.status(200).json({
             status: true,
