@@ -1,6 +1,7 @@
 'use strict';
 
 let userModel = require('./user.model');
+let appSettingModel = require('../app-settings/app-setting.model');
 var { encryptText,comparePassword } = require('../../services/app.services');
 var jwt = require('../../services/jwt.service');
 var { validator } = require('../../util/helper');
@@ -36,18 +37,54 @@ const login = async (req, res) => {
                 message: 'Invalid Credentials'
             })
         } else {
+
+            let searchQuery = {};
+            searchQuery["email"] = req.body.email;
+
+            let data = await userModel.aggregate([
+                { $match: searchQuery },
+                {
+                    $lookup: {
+                        from: 'app_settings',
+                        localField: '_id',
+                        foreignField: 'user_id',
+                        as: 'appSettings',
+                    },
+                },
+                {
+                    $project: {
+                        _id: false,
+                        password: false,
+                        isNumberVerified: false,
+                        isActive: false,
+                        creationAt: false,
+                        updatedAt: false,
+                        __v: false,
+                        "appSettings._id": false,
+                        "appSettings.user_id": false,
+                        "appSettings.creationAt": false,
+                        "appSettings.updatedAt": false,
+                        "appSettings.__v": false,
+                    }
+                }
+            
+            ])
+
             // *compare db password with request body password
             let compare_result = await comparePassword(req.body.password, result.password);
+
             // *generate JsonWebToken
             let token = await jwt.generateToken({
                 id: result._id,
                 email: result.email
             }, 'login');
+
             //* if password / token successful
             if(compare_result && token){
                 return res.json({ 
                     status: true,
-                    token: token
+                    token: token,
+                    user: data
                 });
             } else {
                 return res.status(404).json({
@@ -68,6 +105,7 @@ const register = async (req, res) => {
         const validationRule = {
             'email': 'required|email',
             'password': 'required',
+            'country_code': 'required',
             'phone_number': 'required',
             'isNumberVerified': 'required',
         }
@@ -99,6 +137,20 @@ const register = async (req, res) => {
         // *insert
         const user = new userModel(obj); 
         await user.save();
+
+        if(user){
+
+             // *get user id by email
+            let result = await userModel.findOne({
+                email: req.body.email
+            });
+
+            const appSetting = new appSettingModel({
+                user_id: result._id, 
+            });
+
+            await appSetting.save();
+        }
 
         return res.status(200).json({
             status: true,
