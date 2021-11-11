@@ -5,6 +5,36 @@ var { validator } = require('../../util/helper');
 var errorHandler = require('../../util/errorHandler');
 var mongoose = require('mongoose');
 
+const getThought = async (req, res) => {
+    try {
+        let result = await thoughtModel.find({ user_id: req.user._id }, { updatedAt:0,__v: 0 });
+
+        return res.status(200).json({
+            status: true,
+            message: 'User Thoughts',
+            data: result
+        })
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
+const getThoughtById = async (req, res) => {
+    try {
+        let result = await thoughtModel.find({ _id: req.query.id,user_id: req.user._id }, { updatedAt:0,__v: 0 });
+
+        return res.status(200).json({
+            status: true,
+            message: 'User Thoughts',
+            data: result
+        })
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
 const addThought = async (req, res) => {
     try {
         // *request body validation
@@ -43,15 +73,89 @@ const addThought = async (req, res) => {
     }
 }
 
-const getThought = async (req, res) => {
+const updateThought = async (req, res) => {
     try {
-        let result = await thoughtModel.find({ user_id: req.user._id }, { updatedAt:0,__v: 0 });
+        
+        // *request body validation
+        const validationRule = {
+            'id': 'required',
+        }
+    
+        validator(req.body, validationRule, {}, (err, status) => {
+            if (!status) {
+                return res.status(412).json({
+                    status: false, responseCode: 412,
+                    message: 'Validation failed', data: err
+                })
+            }
+        });
 
-        return res.status(200).json({
-            status: true,
-            message: 'User Thoughts',
-            data: result
-        })
+        const { title, description } = req.body;
+
+        let setThoughtModelQuery = {};
+        if (title) setThoughtModelQuery.title = title;
+        if (description) setThoughtModelQuery.description = description;
+
+        // *update thought
+        const updateThoughtModel = await thoughtModel.findOneAndUpdate(
+            { _id: req.body.id }, 
+            { $set: setThoughtModelQuery }
+        )
+
+        if(!updateThoughtModel){
+            return res.status(500).json({ 
+                status: false,
+                message: "Unexpected error" 
+            });
+        } else {
+            return res.status(200).json({
+                status: true,
+                message: "Thought Updated Successfully",
+            })
+        }
+
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
+const deleteThought = async (req, res) => {
+    try {
+        
+        // *request body validation
+        const validationRule = {
+            'id': 'required',
+        }
+    
+        validator(req.body, validationRule, {}, (err, status) => {
+            if (!status) {
+                return res.status(412).json({
+                    status: false, responseCode: 412,
+                    message: 'Validation failed', data: err
+                })
+            }
+        });
+
+        let setThoughtModelQuery = {
+            _id: req.query.id
+        };
+        
+        // *delete thought
+        const deleteThoughtModel = await thoughtModel.deleteOne( setThoughtModelQuery );
+
+        if(!deleteThoughtModel){
+            return res.status(500).json({ 
+                status: false,
+                message: "Unexpected error" 
+            });
+        } else {
+            return res.status(200).json({
+                status: true,
+                message: "Thought Deleted Successfully",
+            })
+        }
+
     } catch (err) {
         let error = errorHandler.handle(err)
         return res.status(500).json(error)
@@ -59,6 +163,9 @@ const getThought = async (req, res) => {
 }
 
 module.exports = {
-    addThought: addThought,
     getThought: getThought,
+    addThought: addThought,
+    updateThought: updateThought,
+    deleteThought: deleteThought,
+    getThoughtById: getThoughtById,
 }

@@ -75,6 +75,52 @@ const addSubTask = async (req, res) => {
     }
 }
 
+const completeSubtask = async (req, res) => {
+    try {
+        
+        // *request body validation
+        const validationRule = {
+            'id': 'required',
+        }
+    
+        validator(req.body, validationRule, {}, (err, status) => {
+            if (!status) {
+                return res.status(412).json({
+                    status: false, responseCode: 412,
+                    message: 'Validation failed', data: err
+                })
+            }
+        });
+
+        let setSubTaskModelQuery = {
+            isCompleted: true
+        };
+
+        // *update sub task
+        const updateSubTaskModel = await subTaskModel.findOneAndUpdate(
+            { _id: req.body.id }, 
+            { $set: setSubTaskModelQuery }
+        )
+
+        if(!updateSubTaskModel){
+            return res.status(500).json({ 
+                status: false,
+                message: "Unexpected error" 
+            });
+        } else {
+            return res.status(200).json({
+                status: true,
+                message: "Sub Task Completed Successfully",
+            })
+        }
+
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
 module.exports = {
     addSubTask: addSubTask,
+    completeSubtask: completeSubtask,
 }

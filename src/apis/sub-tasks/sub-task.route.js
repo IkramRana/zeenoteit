@@ -10,5 +10,6 @@ let router = express.Router();
 
 //post
 router.post('/add-subtask', auth.validate, subTaskCtrl.addSubTask);
+router.patch('/complete-subtask', auth.validate, subTaskCtrl.completeSubtask);
 
 module.exports = router;

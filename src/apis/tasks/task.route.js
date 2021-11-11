@@ -11,5 +11,7 @@ let router = express.Router();
 //post
 router.post('/add-task', auth.validate, taskCtrl.addTask);
 router.get('/user-tasks', auth.validate, taskCtrl.getUserTasks);
+router.patch('/update-title', auth.validate, taskCtrl.updateTaskTitle);
+router.delete('/delete-task', auth.validate, taskCtrl.deleteTask);
 
 module.exports = router;

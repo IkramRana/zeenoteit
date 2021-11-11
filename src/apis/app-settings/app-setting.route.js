@@ -8,8 +8,7 @@ let router = express.Router();
 
 // *Prefix Path --- '/api/app-setting'
 
-//post
-router.post('/updateSetting', auth.validate, appSettingCtrl.updateSetting);
+router.patch('/updateSetting', auth.validate, appSettingCtrl.updateSetting);
 
 
 module.exports = router;

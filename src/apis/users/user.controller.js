@@ -140,7 +140,7 @@ const register = async (req, res) => {
 
         if(user){
 
-             // *get user id by email
+            // *get user id by email
             let result = await userModel.findOne({
                 email: req.body.email
             });
@@ -193,6 +193,37 @@ const verifyToken = async (req, res) => {
     }
 }
 
+const deactivateAccount = async (req, res) => {
+    try {
+        
+        let setUserModelQuery = {
+            isActive: false
+        };
+
+        // *deactivate account
+        const updateUserModel = await userModel.findOneAndUpdate(
+            { _id: req.user.id }, 
+            { $set: setUserModelQuery }
+        )
+
+        if(!updateUserModel){
+            return res.status(500).json({ 
+                status: false,
+                message: "Unexpected error" 
+            });
+        } else {
+            return res.status(200).json({
+                status: true,
+                message: "Account Deleted Successfully",
+            })
+        }
+
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
 const checkUserEmailAndPhone = async (req,res) => {
     try {
         
@@ -228,8 +259,9 @@ const checkUserEmailAndPhone = async (req,res) => {
 }
 
 module.exports = {
-    checkUserEmailAndPhone: checkUserEmailAndPhone,
-    verifyToken: verifyToken,
-    register: register,
     login: login,
+    register: register,
+    verifyToken: verifyToken,
+    deactivateAccount: deactivateAccount,
+    checkUserEmailAndPhone: checkUserEmailAndPhone,
 }
