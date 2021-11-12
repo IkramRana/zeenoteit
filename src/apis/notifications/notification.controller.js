@@ -65,12 +65,22 @@ const addUserNotification = async (req, res) => {
         let result = await notificationTypeModel.findOne({
             _id: req.body.type_id
         });
+
+        // *get last order number
+        let orderNo = await userNotificationModel.find({}).limit(1).sort({order_no: -1})
+
+        if(!orderNo){
+            orderNo = 1;
+        } else {
+            orderNo = +orderNo[0].order_no + 1;
+        }
         
         // *create obj for db insert
         let obj = {
             type_id: req.body.type_id,
             type_title: result.title,
             notification: req.body.notification,
+            order_no: orderNo,
         };
 
         // *insert

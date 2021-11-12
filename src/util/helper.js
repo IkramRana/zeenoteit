@@ -6,7 +6,28 @@ const validator = (body, rules, customMessages, callback) => {
     validation.fails(() => callback(validation.errors, false));
 };
 
+const getMinHrFromString = (timeString,timeInterval) => {
+    const splitTime = timeString.split(':')
+    const totalMinutes = (+splitTime[0] * 60 ) + +timeInterval + +splitTime[1];
+
+    const hours = Math.floor(totalMinutes / 60) < 10 ? '0'+Math.floor(totalMinutes / 60) : Math.floor(totalMinutes / 60);          
+    const minutes = (totalMinutes % 60) < 10 ? '0'+(totalMinutes % 60) : (totalMinutes % 60);
+    const sec = splitTime[2].substring(0, 2);
+    
+    const time = hours+':'+minutes+':'+sec;
+
+    return  time;
+}
+
+const getMinFromString = (timeString) => {
+    const splitTime = timeString.split(':')
+    const totalMinutes = (+splitTime[0] * 60 ) + +splitTime[1];
+    return  totalMinutes;
+}
+
 
 module.exports = {
-    validator
+    validator,
+    getMinFromString,
+    getMinHrFromString
 }

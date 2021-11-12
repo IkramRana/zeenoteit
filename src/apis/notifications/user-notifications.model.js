@@ -15,6 +15,11 @@ const UserNotificationSchema = new mongoose.Schema({
     maxlength: 550,
     required: true,
   },
+  order_no: {
+    type: Number,
+    unique: true,
+    required: true,
+  },
   creationAt: {
     type: Date,
     default: Date.now

@@ -138,7 +138,7 @@ const deleteThought = async (req, res) => {
         });
 
         let setThoughtModelQuery = {
-            _id: req.query.id
+            _id: req.body.id
         };
         
         // *delete thought

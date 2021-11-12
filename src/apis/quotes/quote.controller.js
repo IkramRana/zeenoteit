@@ -23,9 +23,16 @@ const addQuote = async (req, res) => {
             }
         });
         
-        // *create obj for db insert
-        let obj = {
+        // *create insert obj for db insert
+        let insertObj = {
             user_id: req.user._id,
+            quote: req.body.quote,
+            sponsor: req.body.sponsor,
+            author: req.body.author,
+        };
+        
+        // *create update obj for db insert
+        let updateObj = {
             quote: req.body.quote,
             sponsor: req.body.sponsor,
             author: req.body.author,
@@ -36,14 +43,16 @@ const addQuote = async (req, res) => {
         
         // *if code exist then update it else insert
         if(count > 0){
-            await quoteModel.updateOne(obj);
+            await quoteModel.findOneAndUpdate(
+                { user_id: req.user._id }, 
+                { $set: updateObj }
+            )
             res.status(200).json({
                 message: "Quote Updated Successfully",
             })
         } else {
-            
             // *insert
-            const quote = new quoteModel(obj); 
+            const quote = new quoteModel(insertObj); 
             await quote.save();
 
             res.status(200).json({

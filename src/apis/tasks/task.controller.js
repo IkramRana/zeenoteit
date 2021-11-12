@@ -23,6 +23,14 @@ const getUserTasks = async (req, res) => {
                 },
             },
             {
+                $lookup: {
+                    from: 'colors',
+                    localField: 'color',
+                    foreignField: '_id',
+                    as: 'color',
+                },
+            },
+            {
                 $project: {
                     user_id: false,
                     creationAt: false,
@@ -31,7 +39,10 @@ const getUserTasks = async (req, res) => {
                     "subtasks.user_id": false,
                     "subtasks.creationAt": false,
                     "subtasks.updatedAt": false,
-                    "subtasks.__v": false,
+                    "subtasks.__v": false, 
+                    "color.creationAt": false,
+                    "color.updatedAt": false,
+                    "color.__v": false,
                 }
             }
         

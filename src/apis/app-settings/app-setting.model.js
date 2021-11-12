@@ -8,7 +8,7 @@ const AppSettingSchema = new mongoose.Schema({
   dailyOpenTime: {
     type: String,
     maxlength: 120,
-    default: "09:00",
+    default: "09:00:00",
     required: true,
   },
   dailyTimeInterval: {

@@ -9,6 +9,10 @@ const UserNotificationLogSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user_notifications',
   },
+  notification_order_no: {
+    type: Number,
+    required: true,
+  },
   isRead: {
     type: Boolean,
     default: false,
