@@ -10,7 +10,7 @@ encryptText = async (text) => {
     }
 }
 
-// *compare password function
+// *compare password function 
 comparePassword = async (plain_text, hash) => {
     try {
         let result = await bcrypt.compare(plain_text, hash);
