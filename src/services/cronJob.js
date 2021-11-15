@@ -4,8 +4,8 @@ var { init } = require('../util/notification');
 initJob = () => {
     try {
         var job = new CronJob('* * * * * *', function() {
-            //const d = new Date();
-            //console.log('You will see this message every minute',d);
+            const d = new Date();
+            console.log('You will see this message every minute',d.toLocaleTimeString());
             init();
         }, null, true);
         job.start();

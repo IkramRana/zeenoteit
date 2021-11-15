@@ -65,6 +65,7 @@ const addTask = async (req, res) => {
         const validationRule = {
             'title': 'required|string',
             'color': 'required|string',
+            'columnNo': 'required',
         }
     
         validator(req.body, validationRule, {}, (err, status) => {
@@ -81,6 +82,7 @@ const addTask = async (req, res) => {
             user_id: req.user._id,
             title: req.body.title,
             color: req.body.color,
+            column_no: req.body.columnNo,
         };
 
         // *get count of same task

@@ -14,6 +14,10 @@ const TaskSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'colors',
   },
+  column_no: {
+    type: Number,
+    required: true
+  },
   creationAt: {
     type: Date,
     default: Date.now
