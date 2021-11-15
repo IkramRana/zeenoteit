@@ -7,7 +7,6 @@ var mongoose = require('mongoose');
 var cors = require('cors');
 require('dotenv').config();
 var { initJob } = require('./src/services/cronJob');
-var { initSocket } = require('./src/services/socket');
 var appRoutes = require('./src/routes/app.route');
 
 // *db connect
@@ -25,9 +24,6 @@ var app = express();
 
 // *init cron job
 //initJob();
-
-// *init socket
-//initSocket();
 
 // *view engine setup
 app.set('views', path.join(__dirname, 'views'));

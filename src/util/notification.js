@@ -1,6 +1,7 @@
 'use strict';
 
 var { getMinHrFromString,getMinFromString } = require('./helper');
+var { updateArray } = require('../services/socket');
 
 let userModel = require('../apis/users/user.model');
 let appSettingModel = require('../apis/app-settings/app-setting.model');
@@ -19,6 +20,10 @@ const init = async () => {
     try {
         let userNotificationLog = []; // *initialize userNotificationLog array
         let notificationLog = []; // *initialize notificationLog array
+
+        // *set data object
+        let d = new Date();
+        let date = d.getFullYear() + '-' + (+d.getMonth() + 1) + '-' + d.getDate();
         
         // *if users array is empty then fetch all active users from database
         if(users.length === 0){
@@ -44,6 +49,27 @@ const init = async () => {
             });
         }
 
+        // *if daily users notification count array is empty then fetch from database
+        if(dailyUserNotificationCounts.length === 0){
+            let notifyCount = await userNotificationLogModel.aggregate([
+                { $match: {creationAt: {$gte:new Date(date)}} },
+                {
+                    $group :
+                    {
+                        _id : "$user_id",
+                        notificationCount: { $sum: 1 }
+                    }
+                }
+            ])
+            notifyCount.map(function(val, index){
+                // *push result to  user notification counts array
+                dailyUserNotificationCounts.push(val);
+            });
+            updateArray(dailyUserNotificationCounts);
+        } else {
+            updateArray(dailyUserNotificationCounts);
+        }
+
         // *if user notification array is empty then fetch all notifications from database
         if(userNotifications.length === 0){
 
@@ -55,10 +81,6 @@ const init = async () => {
             });
         }
         
-        // *set data object
-        let d = new Date();
-        let date = d.getFullYear() + '-' + (+d.getMonth() + 1) + '-' + d.getDate();
-
         // *if notification log haven't checked then check today's notification log count from database
         if(isCheckedNotificationLog === false){
 
@@ -181,6 +203,7 @@ const init = async () => {
                                 // *push result to  user notification counts array
                                 dailyUserNotificationCounts.push(val);
                             });
+                            updateArray(dailyUserNotificationCounts);
                         }
 
                     });
@@ -196,9 +219,10 @@ const init = async () => {
             let time = d.toLocaleTimeString();
             let splitTime = time.split(':');
             let hour = splitTime[0];
+            console.log('file: notification.js => line 201 => init => hour', hour);
 
-            // *send first notification of the day to all users at 9'o clock
-            if(+hour === 10){
+            // *send first notification of the day to all users at 9'o clock 
+            if(+hour === 3){
                 // *get first notification
                 let userFirstNotification = await userNotificationModel.find({}).limit(1).sort({_id: 1})
 
@@ -255,6 +279,7 @@ const init = async () => {
                     // *push result to  user notification counts array
                     dailyUserNotificationCounts.push(val);
                 });
+                updateArray(dailyUserNotificationCounts);
             }
         }
 

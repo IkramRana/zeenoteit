@@ -88,9 +88,10 @@ const addTask = async (req, res) => {
         // *get count of same task
         let count = await taskModel.find({ user_id: req.user._id,title: req.body.title }).count()
 
-        // *if task exist then return
+        // *if task title exist then return
         if(count > 0){
             res.status(400).json({
+                status: false,
                 message: "Task Title Already Exist",
             })
         } else {
@@ -99,6 +100,7 @@ const addTask = async (req, res) => {
             await task.save();
             
             res.status(200).json({
+                status: true,
                 message: "Task Created Successfully",
             })
         }
@@ -126,26 +128,37 @@ const updateTaskTitle = async (req, res) => {
             }
         });
 
-        let setTaskModelQuery = {
-            title: req.body.title
-        };
+        // *get count of same task
+        let count = await taskModel.find({ user_id: req.user._id,title: req.body.title }).count()
 
-        // *update task title
-        const updateTaskModel = await taskModel.findOneAndUpdate(
-            { _id: req.body.id }, 
-            { $set: setTaskModelQuery }
-        )
-
-        if(!updateTaskModel){
-            return res.status(500).json({ 
+        // *if task title exist then return
+        if(count > 0){
+            res.status(400).json({
                 status: false,
-                message: "Unexpected error" 
-            });
-        } else {
-            return res.status(200).json({
-                status: true,
-                message: "Title Updated Successfully",
+                message: "Task Title Already Exist",
             })
+        } else {
+            let setTaskModelQuery = {
+                title: req.body.title
+            };
+    
+            // *update task title
+            const updateTaskModel = await taskModel.findOneAndUpdate(
+                { _id: req.body.id }, 
+                { $set: setTaskModelQuery }
+            )
+    
+            if(!updateTaskModel){
+                return res.status(500).json({ 
+                    status: false,
+                    message: "Unexpected error" 
+                });
+            } else {
+                return res.status(200).json({
+                    status: true,
+                    message: "Title Updated Successfully",
+                })
+            }
         }
 
     } catch (err) {
