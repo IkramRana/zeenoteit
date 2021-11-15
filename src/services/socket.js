@@ -3,7 +3,7 @@ const io = require('socket.io')(3019);
 
 var userNotifications = [1,2,3];
 
-initSocket = () => {
+initSocket = () => { 
     // Add a connect listener
     io.on('connection', function (socket) {
 
