@@ -25,8 +25,6 @@ var app = express();
 
 // *init cron job
 //initJob();
-
-// *init socket
 //initSocket();
 
 // *view engine setup

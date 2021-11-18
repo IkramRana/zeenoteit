@@ -13,8 +13,8 @@ const AppSettingSchema = new mongoose.Schema({
   },
   dailyTimeInterval: {
     type: Number,
-    maxlength: 2,
-    default: 3,
+    maxlength: 5,
+    default: 180,
     required: true,
   },
   isNotifyEnable: {

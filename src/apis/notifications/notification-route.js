@@ -12,4 +12,7 @@ let router = express.Router();
 router.post('/add-notification-type', auth.validate, notificationCtrl.addNotificationType);
 router.post('/add-user-notification', auth.validate, notificationCtrl.addUserNotification);
 
+//get
+router.get('/user-notifications', auth.validate, notificationCtrl.getUserWiseNotifications);
+
 module.exports = router;

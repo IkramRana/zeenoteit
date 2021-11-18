@@ -1,29 +1,30 @@
 {
-    "name": "zee-note-it",
-    "version": "0.0.0",
-    "private": true,
-    "scripts": {
-      "start": "node ./bin/www",
-      "server": "nodemon -r dotenv/config ./bin/www",
-      "server-debug": "node --inspect -r dotenv/config ./bin/www"
-    },
-    "dependencies": {
-      "bcryptjs": "^2.4.3",
-      "cookie-parser": "^1.4.5",
-      "cors": "^2.8.5",
-      "cron": "^1.8.2",
-      "debug": "~2.6.9",
-      "dotenv": "^10.0.0",
-      "express": "^4.16.4",
-      "http-errors": "~1.6.3",
-      "jade": "~1.11.0",
-      "jsonwebtoken": "^8.5.1",
-      "mongoose": "^6.0.12",
-      "morgan": "~1.9.1",
-      "multer": "^1.4.3",
-      "nodemailer": "^6.7.0",
-      "nodemon": "^2.0.14",
-      "socket.io": "^4.3.2",
-      "validatorjs": "^3.22.1"
-    }
+  "name": "zee-note-it",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "server": "nodemon -r dotenv/config ./bin/www",
+    "server-debug": "node --inspect -r dotenv/config ./bin/www"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "cron": "^1.8.2",
+    "csvtojson": "^2.0.10",
+    "debug": "~2.6.9",
+    "dotenv": "^10.0.0",
+    "express": "^4.16.4",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.0.12",
+    "morgan": "~1.9.1",
+    "multer": "^1.4.3",
+    "nodemailer": "^6.7.0",
+    "nodemon": "^2.0.14",
+    "socket.io": "^4.3.2",
+    "validatorjs": "^3.22.1"
   }
+}

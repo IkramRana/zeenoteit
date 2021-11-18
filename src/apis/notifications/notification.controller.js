@@ -2,6 +2,7 @@
 
 let notificationTypeModel = require('./notification-type.model');
 let userNotificationModel = require('./user-notifications.model');
+let userNotificationLogModel = require('../notification-log/user-notification-log.model');
 var { validator } = require('../../util/helper');
 var errorHandler = require('../../util/errorHandler');
 
@@ -101,7 +102,79 @@ const addUserNotification = async (req, res) => {
     }
 }
 
+const getUserWiseNotifications = async (req, res) => {
+    try {
+        let notifications = [];
+
+        // *set data object
+        let d = new Date();
+        let date = d.getFullYear() + '-' + (+d.getMonth() + 1) + '-' + d.getDate();
+
+        let result = await userNotificationLogModel.aggregate([
+            { $match: { $and:[ {"user_id":req.user._id,'creationAt':{$gte:new Date(date)}} ] }  },
+            {
+                $lookup: {
+                    from: 'user_notifications',
+                    localField: 'notification_id',
+                    foreignField: '_id',
+                    as: 'notifications',
+                },
+            },
+            {
+                $project: {
+                    user_id: false,
+                    notification_id: false,
+                    notification_order_no: false,
+                    updatedAt: false,
+                    __v: false,
+                    "notifications._id": false,
+                    "notifications.type_id": false,
+                    "notifications.creationAt": false,
+                    "notifications.updatedAt": false,
+                    "notifications.__v": false, 
+                }
+            }
+        ])
+
+        result.map(function(val, index){
+            let time = JSON.stringify(val.creationAt);
+            notifications.push({
+                _id: val._id,
+                isRead: val.isRead,
+                notificationTitle: val.notifications[0].type_title,
+                notificationDescription: val.notifications[0].notification,
+                notificationOrder: val.notifications[0].order_no,
+                notificationTime: time.substr(12,5)
+            })
+        })
+
+        // *update read notification bit to true
+        let userNotificationLogObj = {
+            isRead: true,
+        }
+
+        const updateUserNotificationLogModel = await userNotificationLogModel.updateMany(
+            { user_id: req.user._id,isRead: false }, 
+            { $set: userNotificationLogObj }
+        )
+
+        return res.status(200).json({
+            status: true,
+            message: 'Notifications',
+            data: notifications
+        })
+
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json({
+            status: false,
+            message: error
+        })
+    }
+}
+
 module.exports = {
     addNotificationType: addNotificationType,
     addUserNotification: addUserNotification,
+    getUserWiseNotifications: getUserWiseNotifications,
 }

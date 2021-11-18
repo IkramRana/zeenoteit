@@ -38,6 +38,14 @@ const login = async (req, res) => {
             })
         } else {
 
+            // *check user is active or in active
+            if(result.isActive === false){
+                return res.status(404).json({
+                    status: false,
+                    message: 'Your Account is deactivated!, Contact us for further process'
+                }) 
+            }
+
             let searchQuery = {};
             searchQuery["email"] = req.body.email;
 
@@ -53,7 +61,6 @@ const login = async (req, res) => {
                 },
                 {
                     $project: {
-                        _id: false,
                         password: false,
                         isNumberVerified: false,
                         isActive: false,
