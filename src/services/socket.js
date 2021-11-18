@@ -22,14 +22,15 @@ const updateArray = (obj) => {
 initSocket = (server) => { 
     //console.log('file: socket.js => line 23 => server', server);
 
-    const io = require('socket.io')(server,{
-        cors: {
-            origin: "http://localhost:3001",
-            methods: ["GET", "POST"]
-        }
-    });
+    // const io = require('socket.io')(server,{
+    //     cors: {
+    //         origin: "http://localhost:3001",
+    //         methods: ["GET", "POST"]
+    //     }
+    // });
 
     server.listen(3019);
+    const io = require('socket.io')(server)
 
     // Add a connect listener
     io.on('connection', function (socket) {
