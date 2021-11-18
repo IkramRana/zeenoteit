@@ -3,6 +3,7 @@
 let express = require('express');
 let quoteCtrl = require('./quote.controller');
 let auth = require('../../services/auth.service')
+const { uploadFile } = require('../../services/fileUpload.service');
 let router = express.Router();
 
 
@@ -10,6 +11,7 @@ let router = express.Router();
 
 //post
 router.post('/add-quote', auth.validate, quoteCtrl.addQuote);
+router.post('/csv-upload', auth.validate, uploadFile , quoteCtrl.csvUpload);
 router.get('/get-quote', auth.validate, quoteCtrl.getQuote);
 
 module.exports = router;

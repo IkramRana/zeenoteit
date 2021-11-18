@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
 const QuoteSchema = new mongoose.Schema({
-  user_id: {
-    type: mongoose.Schema.Types.ObjectId,
+  day_no: {
+    type: Number,
     unique: true,
-    ref: 'users',
+    required: true,
   },
   quote: {
     type: String,

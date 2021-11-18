@@ -9,13 +9,14 @@ const io = require('socket.io')(3019,{
 var userNotifications = [];
 
 const updateArray = (obj) => {
-    console.log('file: socket.js => line 12 => obj', obj);
+    //console.log('file: socket.js => line 12 => obj', obj);
     userNotifications = [];
     obj.map(function(val, index){
         // *push result to  user notification array
         userNotifications.push(val);
     });
-    initSocket();
+    console.log('file: socket.js => line 17 => obj.map => userNotifications', userNotifications);
+    //initSocket();
 }
 
 initSocket = () => { 
@@ -24,10 +25,11 @@ initSocket = () => {
 
         console.log('connect');
 
-        socket.on("user-notifications", userId => {
+        socket.on("new_notification", userId => {
+        console.log('file: socket.js => line 29 => userId', userId);
             userNotifications.map(function(val, index){
                 if(val._id.equals(userId)){
-                    socket.emit("user-notifications", val)
+                    socket.emit("show_notification", val)
                 }
             });
         })
@@ -37,6 +39,7 @@ initSocket = () => {
 
 module.exports = {
     updateArray,
+    initSocket
 }
 
 

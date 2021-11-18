@@ -10,7 +10,7 @@ const updateSetting = async (req, res) => {
     try {
         // *request body validation
         const validationRule = {
-            //'email': 'required|email',
+            'email': 'required|email',
             'countryCode': 'required',
             'phoneNumber': 'required',
             'dailyOpenTime': 'required',

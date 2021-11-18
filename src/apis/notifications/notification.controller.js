@@ -105,15 +105,13 @@ const addUserNotification = async (req, res) => {
 const getUserWiseNotifications = async (req, res) => {
     try {
         let notifications = [];
+
         // *set data object
         let d = new Date();
         let date = d.getFullYear() + '-' + (+d.getMonth() + 1) + '-' + d.getDate();
 
-        let searchQuery = {};
-        searchQuery["user_id"] = req.user._id;
-
         let result = await userNotificationLogModel.aggregate([
-            { $match:  searchQuery },
+            { $match: { $and:[ {"user_id":req.user._id,'creationAt':{$gte:new Date(date)}} ] }  },
             {
                 $lookup: {
                     from: 'user_notifications',
@@ -127,7 +125,6 @@ const getUserWiseNotifications = async (req, res) => {
                     user_id: false,
                     notification_id: false,
                     notification_order_no: false,
-                    creationAt: false,
                     updatedAt: false,
                     __v: false,
                     "notifications._id": false,
@@ -140,14 +137,26 @@ const getUserWiseNotifications = async (req, res) => {
         ])
 
         result.map(function(val, index){
+            let time = JSON.stringify(val.creationAt);
             notifications.push({
                 _id: val._id,
                 isRead: val.isRead,
                 notificationTitle: val.notifications[0].type_title,
                 notificationDescription: val.notifications[0].notification,
                 notificationOrder: val.notifications[0].order_no,
+                notificationTime: time.substr(12,5)
             })
-        });
+        })
+
+        // *update read notification bit to true
+        let userNotificationLogObj = {
+            isRead: true,
+        }
+
+        const updateUserNotificationLogModel = await userNotificationLogModel.updateMany(
+            { user_id: req.user._id,isRead: false }, 
+            { $set: userNotificationLogObj }
+        )
 
         return res.status(200).json({
             status: true,

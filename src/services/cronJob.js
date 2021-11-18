@@ -1,11 +1,9 @@
 var CronJob = require('cron').CronJob;
 var { init } = require('../util/notification');
-var { updateArray } = require('./socket');
-let userNotificationLogModel = require('../apis/notification-log/user-notification-log.model');
 
 initJob = () => {
     try {
-        var job = new CronJob('1 * * * * *', function() {
+        var job = new CronJob('30 * * * * *', function() {
             //const d = new Date();
             //console.log('You will see this message every minute',d.toLocaleTimeString());
             init();
