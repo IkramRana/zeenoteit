@@ -24,8 +24,8 @@ mongoose.connect(process.env.DB_URL, {
 var app = express();
 
 // *init cron job
-//initJob();
-//initSocket();
+initJob();
+initSocket();
 
 // *view engine setup
 app.set('views', path.join(__dirname, 'views'));
