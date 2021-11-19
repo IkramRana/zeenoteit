@@ -1,10 +1,10 @@
 
-// const io = require('socket.io')(server,{
-//     cors: {
-//         origin: "http://localhost:3001",
-//         methods: ["GET", "POST"]
-//     }
-// });
+const io = require('socket.io')(3019,{
+    cors: {
+        origin: "http://localhost:3001",
+        methods: ["GET", "POST"]
+    }
+});
 
 var userNotifications = [];
 
@@ -19,7 +19,7 @@ const updateArray = (obj) => {
     //initSocket();
 }
 
-initSocket = (server) => { 
+initSocket = () => { 
     //console.log('file: socket.js => line 23 => server', server);
 
     // const io = require('socket.io')(server,{
@@ -29,8 +29,8 @@ initSocket = (server) => {
     //     }
     // });
 
-    server.listen(3019);
-    const io = require('socket.io')(server)
+    //server.listen(3019);
+    // const io = require('socket.io')(server)
 
     // Add a connect listener
     io.on('connection', function (socket) {

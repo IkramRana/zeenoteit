@@ -22,11 +22,16 @@ mongoose.connect(process.env.DB_URL, {
 })
 
 var app = express();
-var server = require('http').createServer(app);
+
+// app.set('port', (process.env.PORT || 5000));
+// var server = app.listen(app.get('port'), function() {
+//   console.log('Node app is running on port', app.get('port'));
+// });
+//var server = require('http').createServer(app);
 
 // *init cron job
-initJob();
-initSocket(server);
+//initJob();
+//initSocket();
 
 // *view engine setup
 app.set('views', path.join(__dirname, 'views'));

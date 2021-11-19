@@ -12,7 +12,7 @@ const getUserTasks = async (req, res) => {
         let searchQuery = {};
         searchQuery["user_id"] = req.user._id;
 
-        let result = await taskModel.aggregate([
+        let results = await taskModel.aggregate([
             { $match: searchQuery },
             {
                 $lookup: {
@@ -45,15 +45,26 @@ const getUserTasks = async (req, res) => {
                     "color.__v": false,
                 }
             }
-        
         ])
+
+        results.map(async (result, index) => {
+            result.subtasks.sort(function(a, b) {
+                var keyA = a.orderSequence,
+                  keyB = b.orderSequence;
+                // *Compare
+                if (keyA < keyB) return -1;
+                if (keyA > keyB) return 1;
+                return 0;
+            });
+        })
 
         return res.status(200).json({
             status: true,
             message: 'All Tasks',
-            data: result
+            data: results
         })
     } catch (err) {
+        console.log('file: task.controller.js => line 59 => getUserTasks => err', err);
         let error = errorHandler.handle(err)
         return res.status(500).json(error)
     }
@@ -77,14 +88,6 @@ const addTask = async (req, res) => {
             }
         });
         
-        // *create obj for db insert
-        let obj = {
-            user_id: req.user._id,
-            title: req.body.title,
-            color: req.body.color,
-            column_no: req.body.columnNo,
-        };
-
         // *get count of same task
         let count = await taskModel.find({ user_id: req.user._id,title: req.body.title }).count()
 
@@ -95,6 +98,38 @@ const addTask = async (req, res) => {
                 message: "Task Title Already Exist",
             })
         } else {
+
+            // *check on same column no wise
+            let isExist = await taskModel.find({ 
+                user_id: req.user._id,
+                column_no: req.body.columnNo,
+            }).count()
+
+            // *if exist then increment last order sequence by 1
+            if(isExist > 0){
+                let result = await taskModel.findOne({ 
+                    user_id: req.user._id,
+                    column_no: req.body.columnNo,
+                }).sort({orderSequence:-1});    
+                // *create obj for db insert            
+                var obj = {
+                    user_id: req.user._id,
+                    title: req.body.title,
+                    color: req.body.color,
+                    column_no: req.body.columnNo,
+                    orderSequence: +result.orderSequence + 1, // *add 1 in last order sequence number
+                };
+            } else {
+                // *create obj for db insert
+                var obj = {
+                    user_id: req.user._id,
+                    title: req.body.title,
+                    color: req.body.color,
+                    column_no: req.body.columnNo,
+                    orderSequence: 1,
+                };
+            }
+
             // *insert
             const task = new taskModel(obj); 
             await task.save();
@@ -167,6 +202,149 @@ const updateTaskTitle = async (req, res) => {
     }
 }
 
+const swapTask = async (req, res) => {
+    try {
+        
+        // *request body validation
+        const validationRule = {
+            'taskId': 'required',
+            'columnNo': 'required',
+            'newOrderSequence': 'required',
+        }
+    
+        validator(req.body, validationRule, {}, (err, status) => {
+            if (!status) {
+                return res.status(412).json({
+                    status: false, responseCode: 412,
+                    message: 'Validation failed', data: err
+                })
+            }
+        });
+
+        // *check task belong to same previous column no
+        let count = await taskModel.find({ 
+            _id: req.body.taskId,
+            column_no: req.body.columnNo
+        }).count()
+
+        let taskDetail = await taskModel.find({_id: req.body.taskId});
+        let newOrderSequence = req.body.newOrderSequence;
+        let currentOrderSequence = taskDetail[0].orderSequence;
+
+        // *if belongs to same column
+        if(count > 0){
+            if(newOrderSequence < currentOrderSequence){
+
+                let getInBetweenTasks = await taskModel.find({
+                    user_id: req.user._id,
+                    column_no: req.body.columnNo,
+                    orderSequence: {
+                        $gte: newOrderSequence,
+                        $lt: currentOrderSequence
+                    }
+                })
+
+                // *update obj
+                let Obj = {
+                    orderSequence: newOrderSequence,
+                }
+
+                // *update task model
+                const updateTaskModel = await taskModel.findOneAndUpdate(
+                    { _id: req.body.taskId }, 
+                    { $set: Obj }
+                )
+
+                getInBetweenTasks.map(async (task, index) => {
+                    let updateSequenceObj = {
+                        orderSequence: +task.orderSequence + 1,
+                    }
+                    await taskModel.findOneAndUpdate(
+                        { _id: task._id }, 
+                        { $set: updateSequenceObj }
+                    )
+                })
+
+            } else {
+                let getInBetweenTasks = await taskModel.find({
+                    user_id: req.user._id,
+                    column_no: req.body.columnNo,
+                    orderSequence: {
+                        $gt: currentOrderSequence,
+                        $lte: newOrderSequence
+                    }
+                })
+
+                // *update obj
+                let Obj = {
+                    orderSequence: newOrderSequence,
+                }
+
+                // *update task model
+                const updateTaskModel = await taskModel.findOneAndUpdate(
+                    {_id: req.body.taskId }, 
+                    { $set: Obj }
+                )
+
+                getInBetweenTasks.map(async (task, index) => {
+                    let updateSequenceObj = {
+                        orderSequence: +task.orderSequence - 1,
+                    }
+                    await taskModel.findOneAndUpdate(
+                        { _id: task._id }, 
+                        { $set: updateSequenceObj }
+                    )
+                })
+            }
+        } else {
+            let getInBetweenTasks = await taskModel.find({
+                user_id: req.user._id,
+                column_no: req.body.columnNo,
+                orderSequence: {
+                    $gte: newOrderSequence
+                }
+            })
+
+            getInBetweenTasks.map(async (task, index) => {
+                let updateSequenceObj = {
+                    orderSequence: +task.orderSequence + 1,
+                }
+                await taskModel.findOneAndUpdate(
+                    { _id: task._id }, 
+                    { $set: updateSequenceObj }
+                )
+            })
+
+            // *create obj for db insert
+            let obj = {
+                user_id: req.user._id,
+                title: taskDetail[0].title,
+                color: taskDetail[0].color,
+                column_no: req.body.columnNo,
+                orderSequence: newOrderSequence,
+            };
+
+            // *insert
+            const task = new taskModel(obj); 
+            await task.save();
+
+            let setTaskModelDeleteQuery = {
+                _id: req.body.taskId
+            };
+            const deleteTaskModel = await taskModel.deleteOne( setTaskModelDeleteQuery );
+        }
+
+        res.status(200).json({
+            status: true,
+            message: 'success',
+        })
+
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
 const deleteTask = async (req, res) => {
     try {
         
@@ -216,6 +394,7 @@ const deleteTask = async (req, res) => {
 
 module.exports = {
     addTask: addTask,
+    swapTask: swapTask,
     deleteTask: deleteTask,
     getUserTasks: getUserTasks,
     updateTaskTitle: updateTaskTitle,

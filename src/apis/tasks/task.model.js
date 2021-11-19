@@ -18,6 +18,10 @@ const TaskSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  orderSequence: {
+    type: Number,
+    required: true,
+  },
   creationAt: {
     type: Date,
     default: Date.now
