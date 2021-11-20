@@ -3,7 +3,7 @@ var { init } = require('../util/notification');
 
 initJob = () => {
     try {
-        var job = new CronJob('30 * * * * *', function() {
+        var job = new CronJob('1 * * * * *', function() {
             //const d = new Date();
             //console.log('You will see this message every minute',d.toLocaleTimeString());
             init();

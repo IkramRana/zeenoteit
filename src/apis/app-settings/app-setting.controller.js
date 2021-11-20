@@ -4,6 +4,7 @@ let appSettingModel = require('./app-setting.model');
 let userModel = require('../users/user.model');
 var { encryptText,comparePassword } = require('../../services/app.services');
 var { validator } = require('../../util/helper');
+var { updateUserArray } = require('../../util/notification')
 var errorHandler = require('../../util/errorHandler');
 
 const updateSetting = async (req, res) => {
@@ -59,6 +60,7 @@ const updateSetting = async (req, res) => {
                 message: "Unexpected error" 
             });
         } else {
+            updateUserArray();
             return res.status(200).json({
                 status: true,
                 message: "Settings Update Successfully",

@@ -30,8 +30,8 @@ var app = express();
 //var server = require('http').createServer(app);
 
 // *init cron job
-//initJob();
-//initSocket();
+// initJob();
+initSocket();
 
 // *view engine setup
 app.set('views', path.join(__dirname, 'views'));
