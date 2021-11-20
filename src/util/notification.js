@@ -599,5 +599,7 @@ const updateSocketUserNotificationArray = async (date) => {
 }
 
 module.exports = {
-    init
+    init,
+    updateUserArray,
+    updateSocketUserNotificationArray
 }
