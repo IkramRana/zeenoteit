@@ -600,6 +600,6 @@ const updateSocketUserNotificationArray = async (date) => {
 
 module.exports = {
     init,
-    updateUserArray,
-    updateSocketUserNotificationArray
+    //updateUserArray,
+    //updateSocketUserNotificationArray
 }
