@@ -31,7 +31,7 @@ var app = express();
 
 // *init cron job
 // initJob();
-//initSocket();
+// initSocket();
 
 // *view engine setup
 app.set('views', path.join(__dirname, 'views'));
