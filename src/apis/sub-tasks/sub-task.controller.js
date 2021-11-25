@@ -76,6 +76,33 @@ const addSubTask = async (req, res) => {
     }
 }
 
+const getUserSubTaskByTaskId = async (req, res) => {
+    try {
+    
+        const subTasks = await subTaskModel.find(
+            {
+                task_id : req.query.id
+            },
+            { 
+                user_id:0,
+                creationAt:0,
+                updatedAt:0,
+                __v: 0 
+            }
+        ).sort({orderSequence:1});
+
+        res.status(200).json({
+            status: true,
+            message: 'Sub Tasks',
+            data: subTasks
+        })
+
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
 const swapSubTask = async (req, res) => {
     try {
 
@@ -264,4 +291,5 @@ module.exports = {
     addSubTask: addSubTask,
     swapSubTask: swapSubTask,
     completeSubtask: completeSubtask,
+    getUserSubTaskByTaskId: getUserSubTaskByTaskId,
 }

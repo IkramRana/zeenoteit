@@ -47,6 +47,17 @@ const getUserTasks = async (req, res) => {
             }
         ])
 
+        //results.map(async (result, index) => {
+            results.sort(function(a, b) {
+                var keyA = a.orderSequence,
+                  keyB = b.orderSequence;
+                // *Compare
+                if (keyA < keyB) return -1;
+                if (keyA > keyB) return 1;
+                return 0;
+            });
+        //})
+        
         results.map(async (result, index) => {
             result.subtasks.sort(function(a, b) {
                 var keyA = a.orderSequence,
@@ -327,6 +338,22 @@ const swapTask = async (req, res) => {
             // *insert
             const task = new taskModel(obj); 
             await task.save();
+
+            // *get new id of task
+            let getTaskId = await taskModel.find({
+                user_id: req.user._id,
+                column_no: req.body.columnNo,
+                orderSequence: newOrderSequence
+            })
+
+            // *update obj
+            let updateTaskId = {
+                task_id: getTaskId[0]. _id,
+            }
+            await subTaskModel.updateMany(
+                { task_id: req.body.taskId }, 
+                { $set: updateTaskId }
+            )
 
             let setTaskModelDeleteQuery = {
                 _id: req.body.taskId
