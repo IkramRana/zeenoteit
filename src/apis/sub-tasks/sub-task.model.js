@@ -22,9 +22,6 @@ const SubTaskSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  completionDate: {
-    type: Date,
-  },
   creationAt: {
     type: Date,
     default: Date.now

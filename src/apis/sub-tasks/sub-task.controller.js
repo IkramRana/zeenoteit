@@ -63,8 +63,8 @@ const addSubTask = async (req, res) => {
             }
 
             // *insert
-            const task = new subTaskModel(obj); 
-            await task.save();
+            const subTask = new subTaskModel(obj); 
+            await subTask.save();
 
             res.status(200).json({
                 message: "Sub Task Created Successfully",
@@ -86,10 +86,27 @@ const getUserSubTaskByTaskId = async (req, res) => {
             { 
                 user_id:0,
                 creationAt:0,
-                updatedAt:0,
+                //updatedAt:0,
                 __v: 0 
             }
         ).sort({orderSequence:1});
+
+        for (var i = subTasks.length - 1; i >= 0; i--) {
+            if(subTasks[i].isCompleted === true){
+                let d = new Date(subTasks[i].updatedAt);
+                let updateAt = d.getFullYear() + '-' + (+d.getMonth() + 1) + '-' + d.getDate();
+
+                let date =  new Date();
+                let currentDate = date.getFullYear() + '-' + (+date.getMonth() + 1) + '-' + date.getDate();
+
+                if(currentDate > updateAt){
+                    const index = subTasks.indexOf(subTasks[i]);
+                    if (index > -1) {
+                        subTasks.splice(index, 1);
+                    }
+                }
+            }
+        }
 
         res.status(200).json({
             status: true,
@@ -242,12 +259,13 @@ const swapSubTask = async (req, res) => {
     }
 }
 
-const completeSubtask = async (req, res) => {
+const checkUncheckSubtask = async (req, res) => {
     try {
         
         // *request body validation
         const validationRule = {
             'id': 'required',
+            'status': 'required',
         }
     
         validator(req.body, validationRule, {}, (err, status) => {
@@ -259,8 +277,13 @@ const completeSubtask = async (req, res) => {
             }
         });
 
+        let date = new Date();
+        let completionDate = req.body.status === true ? date : null;
+
         let setSubTaskModelQuery = {
-            isCompleted: true
+            isCompleted: req.body.status,
+            completionDate: completionDate,
+            updatedAt: date
         };
 
         // *update sub task
@@ -277,7 +300,7 @@ const completeSubtask = async (req, res) => {
         } else {
             return res.status(200).json({
                 status: true,
-                message: "Sub Task Completed Successfully",
+                message: "Sub Task Updated Successfully",
             })
         }
 
@@ -290,6 +313,6 @@ const completeSubtask = async (req, res) => {
 module.exports = {
     addSubTask: addSubTask,
     swapSubTask: swapSubTask,
-    completeSubtask: completeSubtask,
+    checkUncheckSubtask: checkUncheckSubtask,
     getUserSubTaskByTaskId: getUserSubTaskByTaskId,
 }

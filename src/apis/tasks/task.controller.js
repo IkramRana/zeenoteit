@@ -11,7 +11,9 @@ const getUserTasks = async (req, res) => {
     try {
         let searchQuery = {};
         searchQuery["user_id"] = req.user._id;
-
+        
+        let subTask = []; 
+        
         let results = await taskModel.aggregate([
             { $match: searchQuery },
             {
@@ -19,6 +21,19 @@ const getUserTasks = async (req, res) => {
                     from: 'user_sub_tasks',
                     localField: '_id',
                     foreignField: 'task_id',
+                    // let: { id: "$_id" },
+                    // pipeline: [
+                    //     {
+                    //         $match: {
+                    //         //$expr: { $eq: ["$_id", "$$task_id"] },
+                    //         $expr: {
+                    //             $and: [
+                    //               { $eq: ["$task_id", "$$id"] },
+                    //             ]
+                    //         }
+                    //       },
+                    //     },
+                    // ],
                     as: 'subtasks',
                 },
             },
@@ -38,7 +53,8 @@ const getUserTasks = async (req, res) => {
                     __v: false,
                     "subtasks.user_id": false,
                     "subtasks.creationAt": false,
-                    "subtasks.updatedAt": false,
+                    //"subtasks.updatedAt": false,
+                    "subtasks.completionDate": false,
                     "subtasks.__v": false, 
                     "color.creationAt": false,
                     "color.updatedAt": false,
@@ -47,16 +63,15 @@ const getUserTasks = async (req, res) => {
             }
         ])
 
-        //results.map(async (result, index) => {
-            results.sort(function(a, b) {
-                var keyA = a.orderSequence,
-                  keyB = b.orderSequence;
-                // *Compare
-                if (keyA < keyB) return -1;
-                if (keyA > keyB) return 1;
-                return 0;
-            });
-        //})
+
+        results.sort(function(a, b) {
+            var keyA = a.orderSequence,
+                keyB = b.orderSequence;
+            // *Compare
+            if (keyA < keyB) return -1;
+            if (keyA > keyB) return 1;
+            return 0;
+        });
         
         results.map(async (result, index) => {
             result.subtasks.sort(function(a, b) {
@@ -67,6 +82,25 @@ const getUserTasks = async (req, res) => {
                 if (keyA > keyB) return 1;
                 return 0;
             });
+        })
+
+        results.map(async (result, i) => {
+            for (var i = result.subtasks.length - 1; i >= 0; i--) {
+                if(result.subtasks[i].isCompleted === true){
+                    let d = new Date(result.subtasks[i].updatedAt);
+                    let updateAt = d.getFullYear() + '-' + (+d.getMonth() + 1) + '-' + d.getDate();
+
+                    let date =  new Date();
+                    let currentDate = date.getFullYear() + '-' + (+date.getMonth() + 1) + '-' + date.getDate();
+
+                    if(currentDate > updateAt){
+                        const index = result.subtasks.indexOf(result.subtasks[i]);
+                        if (index > -1) {
+                            result.subtasks.splice(index, 1);
+                        }
+                    }
+                }
+            }
         })
 
         return res.status(200).json({
