@@ -360,39 +360,50 @@ const swapTask = async (req, res) => {
                 )
             })
 
-            // *create obj for db insert
+            //*update task detail
             let obj = {
-                user_id: req.user._id,
-                title: taskDetail[0].title,
-                color: taskDetail[0].color,
                 column_no: req.body.columnNo,
                 orderSequence: newOrderSequence,
             };
 
-            // *insert
-            const task = new taskModel(obj); 
-            await task.save();
-
-            // *get new id of task
-            let getTaskId = await taskModel.find({
-                user_id: req.user._id,
-                column_no: req.body.columnNo,
-                orderSequence: newOrderSequence
-            })
-
-            // *update obj
-            let updateTaskId = {
-                task_id: getTaskId[0]. _id,
-            }
-            await subTaskModel.updateMany(
-                { task_id: req.body.taskId }, 
-                { $set: updateTaskId }
+            await taskModel.findOneAndUpdate(
+                { _id: req.body.taskId }, 
+                { $set: obj }
             )
 
-            let setTaskModelDeleteQuery = {
-                _id: req.body.taskId
-            };
-            const deleteTaskModel = await taskModel.deleteOne( setTaskModelDeleteQuery );
+            // *create obj for db insert
+            // let obj = {
+            //     user_id: req.user._id,
+            //     title: taskDetail[0].title,
+            //     color: taskDetail[0].color,
+            //     column_no: req.body.columnNo,
+            //     orderSequence: newOrderSequence,
+            // };
+
+            // *insert
+            // const task = new taskModel(obj); 
+            // await task.save();
+
+            // *get new id of task
+            // let getTaskId = await taskModel.find({
+            //     user_id: req.user._id,
+            //     column_no: req.body.columnNo,
+            //     orderSequence: newOrderSequence
+            // })
+
+            // *update obj
+            // let updateTaskId = {
+            //     task_id: getTaskId[0]. _id,
+            // }
+            // await subTaskModel.updateMany(
+            //     { task_id: req.body.taskId }, 
+            //     { $set: updateTaskId }
+            // )
+
+            // let setTaskModelDeleteQuery = {
+            //     _id: req.body.taskId
+            // };
+            // const deleteTaskModel = await taskModel.deleteOne( setTaskModelDeleteQuery );
         }
 
         res.status(200).json({
