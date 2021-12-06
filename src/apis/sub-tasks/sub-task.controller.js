@@ -27,8 +27,10 @@ const addSubTask = async (req, res) => {
         let count = await subTaskModel.find({ 
             user_id: req.user._id,
             task_id: req.body.task_id,
-            title: req.body.title 
+            title: req.body.title,
+            isCompleted: false 
         }).count()
+        console.log('file: sub-task.controller.js => line 33 => addSubTask => count', count);
 
         // *sub task exist 
         if(count > 0){
