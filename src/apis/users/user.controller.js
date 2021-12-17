@@ -2,6 +2,7 @@
 
 let userModel = require('./user.model');
 let appSettingModel = require('../app-settings/app-setting.model');
+let firebaseToken = require('../firebase-token/firebase-token.model');
 var { encryptText,comparePassword } = require('../../services/app.services');
 var jwt = require('../../services/jwt.service');
 var { validator } = require('../../util/helper');
@@ -88,6 +89,27 @@ const login = async (req, res) => {
 
             //* if password / token successful
             if(compare_result && token){
+
+                // *firebase token
+                if(req.body.firebase_token){
+                    const result = await firebaseToken.find({ token: req.body.firebase_token });
+
+                    if(result){
+                        let setFireBaseTokenModelQuery = {
+                            token: req.body.firebase_token
+                        };
+                        await firebaseToken.deleteOne(setFireBaseTokenModelQuery)
+                    }
+
+                    let tokenObj = {
+                        user_id: data[0]._id,
+                        token: req.body.firebase_token,
+                        isLoggedIn: true
+                    }
+                    await firebaseToken.create(tokenObj);
+                }
+
+                // *success return
                 return res.json({ 
                     status: true,
                     token: token,
@@ -100,6 +122,29 @@ const login = async (req, res) => {
                 })
             }
         }
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
+const logout = async (req, res) => {
+    try {
+        const { firebase_token } = req.body.firebase_token;
+
+        const result = await firebaseToken.find({ token: firebase_token });
+
+        if(result) {
+            let setFireBaseTokenModelQuery = {
+                token: req.body.firebase_token
+            };
+            await firebaseToken.deleteOne(setFireBaseTokenModelQuery)
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: "Logout Successfully",
+        })
     } catch (err) {
         let error = errorHandler.handle(err)
         return res.status(500).json(error)
@@ -231,6 +276,46 @@ const deactivateAccount = async (req, res) => {
     }
 }
 
+const userExist = async (req, res) => {
+    try {
+
+        // *request body validation
+        const validationRule = {
+            'phone': 'required',
+        }
+    
+        validator(req.body, validationRule, {}, (err, status) => {
+            if (!status) {
+                return res.status(412).json({
+                    status: false, responseCode: 412,
+                    message: 'Validation failed', data: err
+                })
+            }
+        });
+
+        const { phone } = req.body;
+
+        //* check if phone exist
+        let phoneCount = await userModel.find({ phone_number: phone }).count()
+
+        if(phoneCount > 0){
+            return res.status(400).json({
+                status: true,
+                message: "Phone Number Exist",
+            })
+        }
+
+        return res.status(400).json({
+            status: false,
+            message: "Phone Number Does Not Exist",
+        })
+
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
 const checkUserEmailAndPhone = async (req,res) => {
     try {
         
@@ -267,7 +352,9 @@ const checkUserEmailAndPhone = async (req,res) => {
 
 module.exports = {
     login: login,
+    logout: logout,
     register: register,
+    userExist: userExist,
     verifyToken: verifyToken,
     deactivateAccount: deactivateAccount,
     checkUserEmailAndPhone: checkUserEmailAndPhone,
