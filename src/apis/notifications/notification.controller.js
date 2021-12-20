@@ -160,7 +160,7 @@ const getUserWiseNotifications = async (req, res) => {
         )
         
         if(updateUserNotificationLogModel){
-            updateSocketUserNotificationArray(date);
+            await updateSocketUserNotificationArray(date);
         }
 
         return res.status(200).json({

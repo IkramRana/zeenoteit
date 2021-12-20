@@ -80,6 +80,13 @@ const init = async () => {
                     console.log('ln 80 -> if');
                     let userCount = 0;
                     let userNotificationOrderNo = 0;
+
+                    // *get first notification
+                    let userFirstNotification = await getUserNotifications();
+                    let userId = user._id;
+                    let notificationId = userFirstNotification[0]._id;
+                    let notificationOrderNo = userFirstNotification[0].order_no;
+                    let lastNotificationTime = d.toLocaleTimeString('en-GB');
                     
                     // *check if user notification log array is empty
                     if(updateUserNotificationLog.length === 0){
@@ -87,51 +94,23 @@ const init = async () => {
     
                         // *if empty then insert record
                         if(updateUserNotificationLog.length === 0){
-                            // *get first notification
-                            let userFirstNotification = await getUserNotifications();
-    
-                            let userId = user._id;
-                            let notificationId = userFirstNotification[0]._id;
-                            let notificationOrderNo = userFirstNotification[0].order_no;
-                            let lastNotificationTime = d.toLocaleTimeString('en-GB');
-    
                             // *call insert record function
                             await insertUserNotificationAndNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
                         } else {
                             // *execute loop on updated user notification log array
-                            updateUserNotificationLog.map(async function(userNotification, index){
-                                                
+                            updateUserNotificationLog.map(async function(userNotification, index){           
                                 // *check user count
                                 if(user._id.equals(userNotification._id)){
                                     userCount++;   
                                     userNotificationOrderNo = +userNotification.notification_order_no;
                                 }
-    
                             })
 
                             // *if user exist than update log else insert new record in log table for new user
                             if(userCount > 0){
-                                //if(+userNotificationOrderNo !== 1){
-                                    // *get first notification
-                                    let userFirstNotification = await getUserNotifications();
-
-                                    let userId = user._id;
-                                    let notificationId = userFirstNotification[0]._id;
-                                    let notificationOrderNo = userFirstNotification[0].order_no;
-                                    let lastNotificationTime = d.toLocaleTimeString('en-GB');
-
-                                    // *call insert record function
-                                    await insertUserNotificationAndUpdateNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
-                                //}
+                                // *call insert & update record function
+                                await insertUserNotificationAndUpdateNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
                             } else {
-                                // *get first notification
-                                let userFirstNotification = await getUserNotifications();
-
-                                let userId = user._id;
-                                let notificationId = userFirstNotification[0]._id;
-                                let notificationOrderNo = userFirstNotification[0].order_no;
-                                let lastNotificationTime = d.toLocaleTimeString('en-GB');
-
                                 // *call insert record function
                                 await insertUserNotificationAndNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
                             }
@@ -148,36 +127,18 @@ const init = async () => {
 
                         // *if user exist than update log else insert new record in log table for new user
                         if(userCount > 0){
-                            //if(+userNotificationOrderNo !== 1){
-
-                                // *get first notification
-                                let userFirstNotification = await getUserNotifications();
-
-                                let userId = user._id;
-                                let notificationId = userFirstNotification[0]._id;
-                                let notificationOrderNo = userFirstNotification[0].order_no;
-                                let lastNotificationTime = d.toLocaleTimeString('en-GB');
-
-                                // *call insert record function
-                                await insertUserNotificationAndUpdateNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
-                            //}
+                            // *call insert & update record function
+                            await insertUserNotificationAndUpdateNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
                         } else {
-                            // *get first notification
-                            let userFirstNotification = await getUserNotifications();
-
-                            let userId = user._id;
-                            let notificationId = userFirstNotification[0]._id;
-                            let notificationOrderNo = userFirstNotification[0].order_no;
-                            let lastNotificationTime = d.toLocaleTimeString('en-GB');
-
                             // *call insert record function
                             await insertUserNotificationAndNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
                         }
                     }
                 } else {
-                    console.log('ln 221 -> else');
+                    console.log('ln 138 -> else');
                     let userCount = 0;
                     let userNotificationNextTime = '';
+
                     // *execute loop on update notification log array
                     updateNotificationLog.map(async function(notificationLog, index){
                         if(user._id.equals(notificationLog.user_id)){
@@ -186,70 +147,42 @@ const init = async () => {
                         }
                     })
 
-                    // *if user exist
-                    if(userCount > 0){
-                        // *get next minute
-                        let nextNotificationTotalMinutes = getMinFromString(userNotificationNextTime);
-                        console.log('file: notification.js => line 94 => updateNotificationLog.map => nextNotificationTotalMinutes', nextNotificationTotalMinutes);
+                    // *get next minute
+                    let nextNotificationTotalMinutes = getMinFromString(userNotificationNextTime);
+                    console.log('file: notification.js => line 152 => updateNotificationLog.map => nextNotificationTotalMinutes', nextNotificationTotalMinutes);
 
-                        if(+currentTotalMinutes >= +nextNotificationTotalMinutes){ 
-                            
-                            // *get last notification order number from user notification log table against this user
-                            let userLastNotificationLog = await getUserLastNotification(user._id);
+                    if(+currentTotalMinutes >= +nextNotificationTotalMinutes){ 
+                        // *get last notification order number from user notification log table against this user
+                        let userLastNotificationLog = await getUserLastNotification(user._id);
 
-                            // *if user notification array is empty then fetch all notifications from database
-                            if(userNotifications.length === 0){
-                                await updateUserNotificationArray();
-                            }
-
-                            let notificationOrderNo = (+userLastNotificationLog[0].notification_order_no + 1);
-                            // *execute loop on user notification array
-                            userNotifications.map(async function(userFirstNotification, index){
-                                if(notificationOrderNo === +userFirstNotification.order_no){
-                                    let userId = user._id;
-                                    let notificationId = userFirstNotification._id;
-                                    let notificationOrderNo = userFirstNotification.order_no;
-                                    let lastNotificationTime = d.toLocaleTimeString('en-GB');
-
-                                    // *call insert record function
-                                    await insertUserNotificationAndUpdateNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
-                                }
-                            });
+                        // *if user notification array is empty then fetch all notifications from database
+                        if(userNotifications.length === 0){
+                            await updateUserNotificationArray();
                         }
-                    } else {
-                        // *get next minute
-                        let nextNotificationTotalMinutes = getMinFromString(userNotificationNextTime);
-                        console.log('file: notification.js => line 94 => updateNotificationLog.map => nextNotificationTotalMinutes', nextNotificationTotalMinutes);
 
-                        if(+currentTotalMinutes >= +nextNotificationTotalMinutes){ 
-                            
-                            // *get last notification order number from user notification log table against this user
-                            let userLastNotificationLog = await getUserLastNotification(user._id);
+                        let notificationOrderNo = (+userLastNotificationLog[0].notification_order_no + 1);
+                        // *execute loop on user notification array
+                        userNotifications.map(async function(userFirstNotification, index){
+                            if(notificationOrderNo === +userFirstNotification.order_no){
+                                let userId = user._id;
+                                let notificationId = userFirstNotification._id;
+                                let notificationOrderNo = userFirstNotification.order_no;
+                                let lastNotificationTime = d.toLocaleTimeString('en-GB');
 
-                            // *if user notification array is empty then fetch all notifications from database
-                            if(userNotifications.length === 0){
-                                await updateUserNotificationArray();
-                            }
-
-                            let notificationOrderNo = (+userLastNotificationLog[0].notification_order_no + 1);
-
-                            // *execute loop on user notification array
-                            userNotifications.map(async function(userFirstNotification, index){
-                                if(notificationOrderNo === +userFirstNotification.order_no){
-                                    let userId = user._id;
-                                    let notificationId = userFirstNotification._id;
-                                    let notificationOrderNo = userFirstNotification.order_no;
-                                    let lastNotificationTime = d.toLocaleTimeString('en-GB');
-
+                                // *if user exist
+                                if(userCount > 0){
+                                    // *call insert & update record function
+                                    await insertUserNotificationAndUpdateNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
+                                } else {
                                     // *call insert record function
                                     await insertUserNotificationAndNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
                 }
             } else {
-                console.log('ln 221 -> else');
+                console.log('ln 185 -> else');
                 let userCount = 0;
                 let userNotificationNextTime = '';
                 // *execute loop on update notification log array
@@ -260,71 +193,44 @@ const init = async () => {
                     }
                 })
 
-                // *if user exist
-                if(userCount > 0){
-                    // *get next minute
-                    let nextNotificationTotalMinutes = getMinFromString(userNotificationNextTime);
-                    console.log('file: notification.js => line 94 => updateNotificationLog.map => nextNotificationTotalMinutes', nextNotificationTotalMinutes);
+                // *get next minute
+                let nextNotificationTotalMinutes = getMinFromString(userNotificationNextTime);
+                console.log('file: notification.js => line 198 => updateNotificationLog.map => nextNotificationTotalMinutes', nextNotificationTotalMinutes);
 
-                    if(+currentTotalMinutes >= +nextNotificationTotalMinutes){ 
-                        
-                        // *get last notification order number from user notification log table against this user
-                        let userLastNotificationLog = await getUserLastNotification(user._id);
+                if(+currentTotalMinutes >= +nextNotificationTotalMinutes){ 
+                    
+                    // *get last notification order number from user notification log table against this user
+                    let userLastNotificationLog = await getUserLastNotification(user._id);
 
-                        // *if user notification array is empty then fetch all notifications from database
-                        if(userNotifications.length === 0){
-                            await updateUserNotificationArray();
-                        }
-
-                        let notificationOrderNo = (+userLastNotificationLog[0].notification_order_no + 1);
-                        // *execute loop on user notification array
-                        userNotifications.map(async function(userFirstNotification, index){
-                            if(notificationOrderNo === +userFirstNotification.order_no){
-                                let userId = user._id;
-                                let notificationId = userFirstNotification._id;
-                                let notificationOrderNo = userFirstNotification.order_no;
-                                let lastNotificationTime = d.toLocaleTimeString('en-GB');
-
-                                // *call insert record function
-                                await insertUserNotificationAndUpdateNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
-                            }
-                        });
+                    // *if user notification array is empty then fetch all notifications from database
+                    if(userNotifications.length === 0){
+                        await updateUserNotificationArray();
                     }
-                } else {
-                    // *get next minute
-                    let nextNotificationTotalMinutes = getMinFromString(userNotificationNextTime);
-                    console.log('file: notification.js => line 94 => updateNotificationLog.map => nextNotificationTotalMinutes', nextNotificationTotalMinutes);
 
-                    if(+currentTotalMinutes >= +nextNotificationTotalMinutes){ 
-                        
-                        // *get last notification order number from user notification log table against this user
-                        let userLastNotificationLog = await getUserLastNotification(user._id);
+                    let notificationOrderNo = (+userLastNotificationLog[0].notification_order_no + 1);
+                    // *execute loop on user notification array
+                    userNotifications.map(async function(userFirstNotification, index){
+                        if(notificationOrderNo === +userFirstNotification.order_no){
+                            let userId = user._id;
+                            let notificationId = userFirstNotification._id;
+                            let notificationOrderNo = userFirstNotification.order_no;
+                            let lastNotificationTime = d.toLocaleTimeString('en-GB');
 
-                        // *if user notification array is empty then fetch all notifications from database
-                        if(userNotifications.length === 0){
-                            await updateUserNotificationArray();
-                        }
-
-                        let notificationOrderNo = (+userLastNotificationLog[0].notification_order_no + 1);
-
-                        // *execute loop on user notification array
-                        userNotifications.map(async function(userFirstNotification, index){
-                            if(notificationOrderNo === +userFirstNotification.order_no){
-                                let userId = user._id;
-                                let notificationId = userFirstNotification._id;
-                                let notificationOrderNo = userFirstNotification.order_no;
-                                let lastNotificationTime = d.toLocaleTimeString('en-GB');
-
+                            // *if user exist
+                            if(userCount > 0){
+                                // *call insert & update record function
+                                await insertUserNotificationAndUpdateNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
+                            } else {
                                 // *call insert record function
                                 await insertUserNotificationAndNotificationLog(userId,notificationId,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
                             }
-                        });
-                    }
+                        }
+                    });
                 }
             }
         })
     } catch (error) {
-        console.log('file: notification.js => line 10 => init => error', error);
+        console.log('file: notification.js => line 233 => init => error', error);
     }
 }
 

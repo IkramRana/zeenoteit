@@ -71,7 +71,7 @@ const updateSetting = async (req, res) => {
                 message: "Unexpected error" 
             });
         } else {
-            updateUserArray();
+            await updateUserArray();
             return res.status(200).json({
                 status: true,
                 message: "Settings Update Successfully",

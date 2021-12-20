@@ -18,7 +18,7 @@ const updateArray = (obj) => {
         userNotifications.push(val);
     });
     console.log('file: socket.js => line 18 => obj.map => userNotifications', userNotifications);
-    initSocket();
+    //initSocket();
 }
 
 initSocket = () => { 
