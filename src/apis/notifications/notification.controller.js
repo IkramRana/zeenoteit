@@ -181,5 +181,5 @@ const getUserWiseNotifications = async (req, res) => {
 module.exports = {
     addNotificationType: addNotificationType,
     addUserNotification: addUserNotification,
-    getUserWiseNotifications: getUserWiseNotifications,
+    getUserWiseNotifications: getUserWiseNotifications
 }

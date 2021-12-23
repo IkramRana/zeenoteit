@@ -4,21 +4,20 @@ const options = {
     priority: "high",
     timeToLive: 60 * 60 * 24
 };
-const sendNotification = (device_token, object) => {
-    let { title, body, data } = object;
+const sendNotification = async (device_token, object) => {
+    let { title, body } = object;
     var message = {
         notification: {
             title: title,
             body: body,
         },
-        data: { ...data }
     };
     admin.messaging().sendToDevice(device_token, message, options)
         .then(response => {
-            console.log(response);
+            console.log('file: firebase.service.js => line 17 => sendNotification => response', response);
         })
         .catch(error => {
-            console.log(error);
+            console.log('file: firebase.service.js => line 20 => sendNotification => error', error);
         });
 }
 module.exports = {
