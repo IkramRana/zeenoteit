@@ -325,18 +325,34 @@ const updateUserArray = async () => {
              { $match: searchQuery },
              {
                  $lookup: {
-                     from: 'app_settings',
-                     localField: '_id',
-                     foreignField: 'user_id',
-                     as: 'userAppSettings',
+                    from: 'app_settings',
+                    //localField: '_id',
+                    //foreignField: 'user_id',
+                    as: 'userAppSettings',
+                    let: { id: "$_id" },
+                    pipeline: [
+                        { 
+                            $match: {
+                                $expr: { 
+                                    $and: [
+                                        {$eq: ["$$id", "$user_id"]},
+                                        {$eq: [ "$isNotifyEnable", true]},
+                                    ]
+                                }                     
+                            } 
+                        }
+                    ],
                  },
              }
          ])
 
          result.map(function(val, index){
-             // *push result to user array
-             users.push(val);
-         });   
+            let isNotifyEnable =  val.userAppSettings.length > 0 ? true : false;
+            if(isNotifyEnable === true){
+                // *push result to user array
+                users.push(val);
+            }
+        });   
     } catch (error) {
       console.trace('Inside Catch => ', error);
     }
