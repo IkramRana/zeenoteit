@@ -25,9 +25,18 @@ const getMinFromString = (timeString) => {
     return  totalMinutes;
 }
 
+const convertMinToHr = (minutes) => {
+    let hour = Math.floor(minutes / 60); 
+    let minute = minutes % 60;
+    let time = hour + ':' + minute;
+    console.log('file: helper.js => line 32 => convertMinToHr => time', time);
+    return time;
+}
+
 
 module.exports = {
     validator,
+    convertMinToHr,
     getMinFromString,
-    getMinHrFromString
+    getMinHrFromString,
 }

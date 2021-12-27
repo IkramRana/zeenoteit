@@ -1,7 +1,7 @@
 'use strict';
 
 var { updateArray } = require('../services/socket');
-var { getMinHrFromString,getMinFromString } = require('./helper');
+var { getMinHrFromString,getMinFromString,convertMinToHr } = require('./helper');
 const { sendNotification } = require("../services/firebase.service");
 
 let userModel = require('../apis/users/user.model');
@@ -52,16 +52,23 @@ const init = async () => {
         }
 
         // *get current total minutes
-        let currentTotalMinutes = getMinFromString(d.toLocaleTimeString('en-GB'));
-        console.log('file: notification.js => line 54 => init => currentTotalMinutes', currentTotalMinutes);
+        let currentTotalMinutes = '';
+        let currentLocalTotalMinutes = getMinFromString(d.toLocaleTimeString('en-GB'));
+        let getTimezoneOffset = d.getTimezoneOffset();
+        if(getTimezoneOffset < 0){
+            currentTotalMinutes = currentLocalTotalMinutes + parseInt(Math.abs(getTimezoneOffset));
+        } else {
+            currentTotalMinutes = currentLocalTotalMinutes - parseInt(Math.abs(getTimezoneOffset));
+        }
+        console.log('file: notification.js => line 63 => init => currentTotalMinutes', currentTotalMinutes);
 
         // *split current time
-        let currentTime = d.toLocaleTimeString('en-GB');
+        let currentTime = convertMinToHr(currentTotalMinutes);//d.toLocaleTimeString('en-GB');
         let splitCurrentTime = currentTime.split(':');
         let currentHour = splitCurrentTime[0];
         let currentMinute = splitCurrentTime[1];
-        console.log('file: notification.js => line 61 => init => currentMinute', +currentMinute);
-        console.log('file: notification.js => line 62 => init => currentHour', +currentHour);
+        console.log('file: notification.js => line 70 => init => currentMinute', +currentMinute);
+        console.log('file: notification.js => line 71 => init => currentHour', +currentHour);
         
         // *execute loop on active users
         users.map(async function(user, index){
@@ -71,15 +78,15 @@ const init = async () => {
             let splitDailyOpenTime = dailyOpenTime.split(':');
             let dailyOpenHour = splitDailyOpenTime[0];
             let dailyOpenMinute = splitDailyOpenTime[1];
-            console.log('file: notification.js => line 72 => users.map => dailyOpenMinute', +dailyOpenMinute);
-            console.log('file: notification.js => line 73 => init => dailyOpenHour', +dailyOpenHour);
+            console.log('file: notification.js => line 81 => users.map => dailyOpenMinute', +dailyOpenMinute);
+            console.log('file: notification.js => line 82 => init => dailyOpenHour', +dailyOpenHour);
 
             // *get user next notification time interval
             let nextNotificationTime = getMinHrFromString(d.toLocaleTimeString('en-GB'), user.userAppSettings[0].dailyTimeInterval)
             
             if(+currentHour === +dailyOpenHour){
                 if(+currentMinute === +dailyOpenMinute){
-                    console.log('ln 80 -> if');
+                    console.log('ln 89 -> if');
                     let userCount = 0;
                     let userNotificationOrderNo = 0;
 
@@ -139,7 +146,7 @@ const init = async () => {
                         }
                     }
                 } else {
-                    console.log('ln 138 -> else');
+                    console.log('ln 149 -> else');
                     let userCount = 0;
                     let userNotificationNextTime = '';
 
@@ -153,7 +160,7 @@ const init = async () => {
 
                     // *get next minute
                     let nextNotificationTotalMinutes = getMinFromString(userNotificationNextTime);
-                    console.log('file: notification.js => line 152 => updateNotificationLog.map => nextNotificationTotalMinutes', nextNotificationTotalMinutes);
+                    console.log('file: notification.js => line 163 => updateNotificationLog.map => nextNotificationTotalMinutes', nextNotificationTotalMinutes);
 
                     if(+currentTotalMinutes >= +nextNotificationTotalMinutes){ 
                         // *get last notification order number from user notification log table against this user
@@ -188,7 +195,7 @@ const init = async () => {
                     }
                 }
             } else {
-                console.log('ln 185 -> else');
+                console.log('ln 198 -> else');
                 let userCount = 0;
                 let userNotificationNextTime = '';
                 // *execute loop on update notification log array
@@ -201,7 +208,7 @@ const init = async () => {
 
                 // *get next minute
                 let nextNotificationTotalMinutes = getMinFromString(userNotificationNextTime);
-                console.log('file: notification.js => line 198 => updateNotificationLog.map => nextNotificationTotalMinutes', nextNotificationTotalMinutes);
+                console.log('file: notification.js => line 211 => updateNotificationLog.map => nextNotificationTotalMinutes', nextNotificationTotalMinutes);
 
                 if(+currentTotalMinutes >= +nextNotificationTotalMinutes){ 
                     
@@ -238,7 +245,7 @@ const init = async () => {
             }
         })
     } catch (error) {
-        console.log('file: notification.js => line 233 => init => error', error);
+        console.log('file: notification.js => line 248 => init => error', error);
     }
 }
 
@@ -248,7 +255,7 @@ const getUserNotifications = async () => {
         let result = await userNotificationModel.find({}).limit(1).sort({_id: 1});
         return result;
     } catch (error) {
-        console.log('file: notification.js => line 425 => getUserNotifications => error', error);
+        console.log('file: notification.js => line 258 => getUserNotifications => error', error);
     }
 }
 
@@ -259,7 +266,7 @@ const getUserLastNotification = async (userId) => {
         }).limit(1).sort({notification_order_no: -1})
         return result;
     } catch (error) {
-        console.log('file: notification.js => line 425 => getUserNotifications => error', error);
+        console.log('file: notification.js => line 269 => getUserNotifications => error', error);
     }
 }
 
@@ -276,7 +283,7 @@ const insertUserNotificationLogModel = async (userId,notificationId,notification
         const userNotificationLog = new userNotificationLogModel(userNotificationLogObj); 
         await userNotificationLog.save();
     } catch (error) {
-        console.log('file: notification.js => line 434 => insertUserNotificationLogModel => error', error);
+        console.log('file: notification.js => line 286 => insertUserNotificationLogModel => error', error);
     }
 }
 
@@ -292,7 +299,7 @@ const insertNotificationLogModel = async (userId,lastNotificationTime,nextNotifi
         const updateNotificationLogModel = new notificationLogModel(notificationLogObj); 
         await updateNotificationLogModel.save();
     } catch (error) {
-        console.log('file: notification.js => line 434 => insertNotificationLogModel => error', error);
+        console.log('file: notification.js => line 302 => insertNotificationLogModel => error', error);
     }
 }
 
@@ -310,7 +317,7 @@ const updateNotificationLogModel = async (userId,lastNotificationTime,nextNotifi
             { $set: notificationLogObj }
         )
     } catch (error) {
-        console.log('file: notification.js => line 434 => updateNotificationLogModel => error', error);
+        console.log('file: notification.js => line 320 => updateNotificationLogModel => error', error);
     }
 }
 
@@ -354,7 +361,7 @@ const updateUserArray = async () => {
             }
         });   
     } catch (error) {
-      console.trace('Inside Catch => ', error);
+      console.log('file: notification.js => line 364 => updateUserArray => error', error);
     }
 }
 
@@ -368,7 +375,7 @@ const updateUserNotificationArray = async () => {
             userNotifications.push(userFirstNotification);
         });
     } catch (error) {
-        console.log('file: notification.js => line 654 => updateUserNotificationArray => error', error);
+        console.log('file: notification.js => line 378 => updateUserNotificationArray => error', error);
     }
 }
 
@@ -384,7 +391,7 @@ const updateNotificationLogArray = async () => {
              updateNotificationLog.push(val);
          });
     } catch (error) {
-        console.log('file: notification.js => line 649 => updateNotificationLogArray => error', error);
+        console.log('file: notification.js => line 394 => updateNotificationLogArray => error', error);
     }
 }
 
@@ -411,7 +418,7 @@ const updateUserNotificationLogArray = async () => {
             updateUserNotificationLog.push(val);
         });
     } catch (error) {
-        console.log('file: notification.js => line 644 => updateUserNotificationLogArray => error', error);
+        console.log('file: notification.js => line 421 => updateUserNotificationLogArray => error', error);
     }
 }
 
@@ -436,7 +443,7 @@ const updateSocketUserNotificationArray = async (date) => {
         });
         updateArray(dailyUserNotificationCounts);
     } catch (error) {
-        console.log('file: notification.js => line 764 => updateSocketUserNotificationArray => error', error);
+        console.log('file: notification.js => line 446 => updateSocketUserNotificationArray => error', error);
     }
 }
 
@@ -455,7 +462,7 @@ const sendPushNotification = async (userId,notificationTitle,notificationBody,) 
             });
         }
     } catch (error) {
-        console.log('file: notification.js => line 611 => sendPushNotification => error', error);
+        console.log('file: notification.js => line 465 => sendPushNotification => error', error);
     }
 }
 
@@ -479,7 +486,7 @@ const insertUserNotificationAndNotificationLog = async (userId,notificationId,no
         // *send push notification
         await sendPushNotification(userId,notificationTitle,notificationBody);
     } catch (error) {
-        console.log('file: notification.js => line 611 => insertUserNotificationAndNotificationLog => error', error);
+        console.log('file: notification.js => line 489 => insertUserNotificationAndNotificationLog => error', error);
     }
 }
 
@@ -503,7 +510,7 @@ const insertUserNotificationAndUpdateNotificationLog = async (userId,notificatio
         // *send push notification
         await sendPushNotification(userId,notificationTitle,notificationBody);
     } catch (error) {
-        console.log('file: notification.js => line 580 => insertUserNotificationAndUpdateNotificationLog => error', error);
+        console.log('file: notification.js => line 513 => insertUserNotificationAndUpdateNotificationLog => error', error);
     }
 }
 
