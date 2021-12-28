@@ -25,7 +25,7 @@ const getMinFromString = (timeString) => {
     return  totalMinutes;
 }
 
-const convertMinToHr = (minutes) => {
+const convertMinToHr = async (minutes) => {
     let hour = Math.floor(minutes / 60); 
     let minute = minutes % 60;
 

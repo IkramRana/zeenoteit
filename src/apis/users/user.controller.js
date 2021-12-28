@@ -91,7 +91,7 @@ const login = async (req, res) => {
                 minutesDifference = defaultUTCOpenTime - parseInt(Math.abs(getTimezoneOffset));
             }
 
-            const defaultOpenTime = convertMinToHr(minutesDifference);
+            const defaultOpenTime = await convertMinToHr(minutesDifference);
             // *set open time from utc to users gmt according
             data[0].appSettings[0].dailyOpenTime = defaultOpenTime;
 
@@ -221,7 +221,7 @@ const register = async (req, res) => {
                 minutesDifference = defaultOpenTime + parseInt(Math.abs(getTimezoneOffset));
             }
 
-            const defaultUTCOpenTime = convertMinToHr(minutesDifference);
+            const defaultUTCOpenTime = await convertMinToHr(minutesDifference);
 
             // *get user id by email
             let result = await userModel.findOne({

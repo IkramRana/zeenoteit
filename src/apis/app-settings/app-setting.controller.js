@@ -61,7 +61,7 @@ const updateSetting = async (req, res) => {
             } else {
                 minutesDifference = openTimeMinutes + parseInt(Math.abs(getTimezoneOffset));
             }
-            const setUTCOpenTime = convertMinToHr(minutesDifference);
+            const setUTCOpenTime = await convertMinToHr(minutesDifference);
             
             setAppSettingModelQuery.dailyOpenTime = setUTCOpenTime;
         }
