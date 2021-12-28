@@ -60,7 +60,7 @@ const init = async () => {
         } else {
             currentTotalMinutes = currentLocalTotalMinutes - parseInt(Math.abs(getTimezoneOffset));
         }
-        console.log('file: notification.js => line 63 => init => currentTotalMinutes', currentTotalMinutes);
+        console.log('file: notification.js => line 63 => init => currentTotalMinutes', currentTotalMinutes); 
 
         // *split current time
         let currentTime = convertMinToHr(currentTotalMinutes);//d.toLocaleTimeString('en-GB');
