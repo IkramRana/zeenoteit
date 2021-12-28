@@ -70,7 +70,6 @@ const login = async (req, res) => {
                         __v: false,
                         "appSettings._id": false,
                         "appSettings.user_id": false,
-                        "appSettings.timezoneOffset": false,
                         "appSettings.creationAt": false,
                         "appSettings.updatedAt": false,
                         "appSettings.__v": false,
@@ -80,8 +79,8 @@ const login = async (req, res) => {
             ])
 
             // *initialize date obj
-            const date = new Date();
-            const getTimezoneOffset = date.getTimezoneOffset();
+            //const date = new Date();
+            const getTimezoneOffset = data[0].appSettings[0].timezoneOffset;//date.getTimezoneOffset();
             const defaultUTCOpenTime = getMinFromString(data[0].appSettings[0].dailyOpenTime);
             let minutesDifference = 0;
 
@@ -91,7 +90,7 @@ const login = async (req, res) => {
                 minutesDifference = defaultUTCOpenTime - parseInt(Math.abs(getTimezoneOffset));
             }
 
-            const defaultOpenTime = convertMinToHr(minutesDifference);
+            const defaultOpenTime = await convertMinToHr(minutesDifference);
             // *set open time from utc to users gmt according
             data[0].appSettings[0].dailyOpenTime = defaultOpenTime;
 
@@ -177,6 +176,7 @@ const register = async (req, res) => {
             'country_code': 'required',
             'phone_number': 'required',
             'isNumberVerified': 'required',
+            'timezoneOffset': 'required'
         }
     
         validator(req.body, validationRule, {}, (err, status) => {
@@ -189,7 +189,7 @@ const register = async (req, res) => {
         });
         
         // *extract param from request body
-        const { email, password, country_code ,phone_number, isNumberVerified } = req.body;
+        const { email, password, country_code ,phone_number, isNumberVerified, timezoneOffset } = req.body;
 
         // *encrypt incoming password
         const hashPassword = await encryptText(password);
@@ -210,8 +210,8 @@ const register = async (req, res) => {
         if(user){
 
             // *initialize date obj
-            const date = new Date();
-            const getTimezoneOffset = date.getTimezoneOffset();
+            //const date = new Date();
+            const getTimezoneOffset = timezoneOffset;//date.getTimezoneOffset();
             const defaultOpenTime = 540; //09:00 for every user
             let minutesDifference = 0;
 
@@ -221,7 +221,7 @@ const register = async (req, res) => {
                 minutesDifference = defaultOpenTime + parseInt(Math.abs(getTimezoneOffset));
             }
 
-            const defaultUTCOpenTime = convertMinToHr(minutesDifference);
+            const defaultUTCOpenTime = await convertMinToHr(minutesDifference);
 
             // *get user id by email
             let result = await userModel.findOne({
