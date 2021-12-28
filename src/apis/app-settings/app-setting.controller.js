@@ -3,7 +3,7 @@
 let appSettingModel = require('./app-setting.model');
 let userModel = require('../users/user.model');
 var { encryptText,comparePassword } = require('../../services/app.services');
-var { validator } = require('../../util/helper');
+var { validator,getMinFromString,convertMinToHr } = require('../../util/helper');
 var { updateUserArray } = require('../../util/notification')
 var errorHandler = require('../../util/errorHandler');
 
@@ -49,7 +49,22 @@ const updateSetting = async (req, res) => {
         if (phoneNumber) setUserModelQuery.phone_number = phoneNumber;
 
         let setAppSettingModelQuery = {};
-        if (dailyOpenTime) setAppSettingModelQuery.dailyOpenTime = dailyOpenTime;
+        if (dailyOpenTime) {
+            // *initialize date obj
+            const date = new Date();
+            const getTimezoneOffset = date.getTimezoneOffset();
+            const openTimeMinutes = getMinFromString(dailyOpenTime);
+            let minutesDifference = 0;
+
+            if(getTimezoneOffset < 0) {
+                minutesDifference = openTimeMinutes - parseInt(Math.abs(getTimezoneOffset));
+            } else {
+                minutesDifference = openTimeMinutes + parseInt(Math.abs(getTimezoneOffset));
+            }
+            const setUTCOpenTime = convertMinToHr(minutesDifference);
+            
+            setAppSettingModelQuery.dailyOpenTime = setUTCOpenTime;
+        }
         if (dailyTimeInterval) setAppSettingModelQuery.dailyTimeInterval = dailyTimeInterval;
         if (isNotifyEnable) setAppSettingModelQuery.isNotifyEnable = isNotifyEnable;
 
