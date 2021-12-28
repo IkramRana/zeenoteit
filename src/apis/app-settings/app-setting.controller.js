@@ -17,6 +17,7 @@ const updateSetting = async (req, res) => {
             'dailyOpenTime': 'required',
             'dailyTimeInterval': 'required',
             'isNotifyEnable': 'required',
+            'timezoneOffset': 'required'
         }
     
         validator(req.body, validationRule, {}, (err, status) => {
@@ -29,7 +30,7 @@ const updateSetting = async (req, res) => {
         });
         
         // *extract param from request body
-        const { email, password, countryCode ,phoneNumber, dailyOpenTime, dailyTimeInterval, isNotifyEnable } = req.body;
+        const { email, password, countryCode ,phoneNumber, dailyOpenTime, dailyTimeInterval, isNotifyEnable, timezoneOffset } = req.body;
 
         if(password){
             if(password.length < 9){
@@ -51,8 +52,8 @@ const updateSetting = async (req, res) => {
         let setAppSettingModelQuery = {};
         if (dailyOpenTime) {
             // *initialize date obj
-            const date = new Date();
-            const getTimezoneOffset = date.getTimezoneOffset();
+            //const date = new Date();
+            const getTimezoneOffset = timezoneOffset;//date.getTimezoneOffset();
             const openTimeMinutes = getMinFromString(dailyOpenTime);
             let minutesDifference = 0;
 
