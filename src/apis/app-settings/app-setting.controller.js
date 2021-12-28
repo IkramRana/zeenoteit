@@ -4,6 +4,7 @@ let appSettingModel = require('./app-setting.model');
 let userModel = require('../users/user.model');
 var { encryptText,comparePassword } = require('../../services/app.services');
 var { validator } = require('../../util/helper');
+var { updateUserArray } = require('../../util/notification')
 var errorHandler = require('../../util/errorHandler');
 
 const updateSetting = async (req, res) => {
@@ -28,11 +29,22 @@ const updateSetting = async (req, res) => {
         });
         
         // *extract param from request body
-        const { email, countryCode ,phoneNumber, dailyOpenTime, dailyTimeInterval, isNotifyEnable } = req.body;
+        const { email, password, countryCode ,phoneNumber, dailyOpenTime, dailyTimeInterval, isNotifyEnable } = req.body;
 
+        if(password){
+            if(password.length < 9){
+                return res.status(400).json({
+                    status: false,
+                    message: "Password length must be greater than equal to 8",
+                })
+            }
+        }
+        // *encrypt incoming password
+        const hashPassword = await encryptText(password);
 
         let setUserModelQuery = {};
         if (email) setUserModelQuery.email = email;
+        if (password) setUserModelQuery.password = hashPassword;
         if (countryCode) setUserModelQuery.countryCode = countryCode;
         if (phoneNumber) setUserModelQuery.phone_number = phoneNumber;
 
@@ -59,6 +71,7 @@ const updateSetting = async (req, res) => {
                 message: "Unexpected error" 
             });
         } else {
+            await updateUserArray();
             return res.status(200).json({
                 status: true,
                 message: "Settings Update Successfully",

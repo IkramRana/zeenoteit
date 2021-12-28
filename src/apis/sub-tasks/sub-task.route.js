@@ -10,6 +10,8 @@ let router = express.Router();
 
 //post
 router.post('/add-subtask', auth.validate, subTaskCtrl.addSubTask);
-router.patch('/complete-subtask', auth.validate, subTaskCtrl.completeSubtask);
+router.get('/subtask-by-task-id', auth.validate, subTaskCtrl.getUserSubTaskByTaskId);
+router.patch('/swap-subtask', auth.validate, subTaskCtrl.swapSubTask);
+router.patch('/check-uncheck-subtask', auth.validate, subTaskCtrl.checkUncheckSubtask);
 
 module.exports = router;

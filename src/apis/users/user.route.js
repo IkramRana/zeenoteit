@@ -11,8 +11,10 @@ let router = express.Router();
 //post
 router.post('/login', userCtrl.login);
 router.post('/register', userCtrl.register);
+router.post('/userExist', userCtrl.userExist);
 router.post('/verifyToken', userCtrl.verifyToken);
-router.patch('/deactivateAccount', auth.validate, userCtrl.deactivateAccount);
+router.post('/logout', auth.validate, userCtrl.logout);
 router.post('/checkUserEmailAndPhone', userCtrl.checkUserEmailAndPhone);
+router.patch('/deactivateAccount', auth.validate, userCtrl.deactivateAccount);
 
 module.exports = router;

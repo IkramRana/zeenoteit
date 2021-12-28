@@ -9,5 +9,6 @@ let router = express.Router();
 //post
 router.post('/getPasswordResetLink', tokenCtrl.generateLink);
 router.post('/resetPassword', tokenCtrl.resetPassword);
+router.post('/resetAppPassword', tokenCtrl.resetAppPassword);
 
 module.exports = router;

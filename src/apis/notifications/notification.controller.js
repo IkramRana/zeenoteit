@@ -3,6 +3,7 @@
 let notificationTypeModel = require('./notification-type.model');
 let userNotificationModel = require('./user-notifications.model');
 let userNotificationLogModel = require('../notification-log/user-notification-log.model');
+var { updateSocketUserNotificationArray } = require('../../util/notification')
 var { validator } = require('../../util/helper');
 var errorHandler = require('../../util/errorHandler');
 
@@ -157,6 +158,10 @@ const getUserWiseNotifications = async (req, res) => {
             { user_id: req.user._id,isRead: false }, 
             { $set: userNotificationLogObj }
         )
+        
+        if(updateUserNotificationLogModel){
+            await updateSocketUserNotificationArray(date);
+        }
 
         return res.status(200).json({
             status: true,
@@ -176,5 +181,5 @@ const getUserWiseNotifications = async (req, res) => {
 module.exports = {
     addNotificationType: addNotificationType,
     addUserNotification: addUserNotification,
-    getUserWiseNotifications: getUserWiseNotifications,
+    getUserWiseNotifications: getUserWiseNotifications
 }
