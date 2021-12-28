@@ -28,8 +28,16 @@ const getMinFromString = (timeString) => {
 const convertMinToHr = (minutes) => {
     let hour = Math.floor(minutes / 60); 
     let minute = minutes % 60;
+
+    if(+hour < 10){
+        hour = '0'+hour
+    }
+    
+    if(+minute < 10){
+        minute = '0'+minute
+    }
+
     let time = hour + ':' + minute;
-    console.log('file: helper.js => line 32 => convertMinToHr => time', time);
     return time;
 }
 

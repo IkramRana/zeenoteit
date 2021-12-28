@@ -5,7 +5,7 @@ let appSettingModel = require('../app-settings/app-setting.model');
 let firebaseToken = require('../firebase-token/firebase-token.model');
 var { encryptText,comparePassword } = require('../../services/app.services');
 var jwt = require('../../services/jwt.service');
-var { validator } = require('../../util/helper');
+var { validator,convertMinToHr,getMinFromString } = require('../../util/helper');
 var errorHandler = require('../../util/errorHandler');
 
 
@@ -70,6 +70,7 @@ const login = async (req, res) => {
                         __v: false,
                         "appSettings._id": false,
                         "appSettings.user_id": false,
+                        "appSettings.timezoneOffset": false,
                         "appSettings.creationAt": false,
                         "appSettings.updatedAt": false,
                         "appSettings.__v": false,
@@ -77,6 +78,22 @@ const login = async (req, res) => {
                 }
             
             ])
+
+            // *initialize date obj
+            const date = new Date();
+            const getTimezoneOffset = date.getTimezoneOffset();
+            const defaultUTCOpenTime = getMinFromString(data[0].appSettings[0].dailyOpenTime);
+            let minutesDifference = 0;
+
+            if(getTimezoneOffset < 0) {
+                minutesDifference = defaultUTCOpenTime + parseInt(Math.abs(getTimezoneOffset));
+            } else {
+                minutesDifference = defaultUTCOpenTime - parseInt(Math.abs(getTimezoneOffset));
+            }
+
+            const defaultOpenTime = convertMinToHr(minutesDifference);
+            // *set open time from utc to users gmt according
+            data[0].appSettings[0].dailyOpenTime = defaultOpenTime;
 
             // *compare db password with request body password
             let compare_result = await comparePassword(req.body.password, result.password);
@@ -192,13 +209,29 @@ const register = async (req, res) => {
 
         if(user){
 
+            // *initialize date obj
+            const date = new Date();
+            const getTimezoneOffset = date.getTimezoneOffset();
+            const defaultOpenTime = 540; //09:00 for every user
+            let minutesDifference = 0;
+
+            if(getTimezoneOffset < 0) {
+                minutesDifference = defaultOpenTime - parseInt(Math.abs(getTimezoneOffset));
+            } else {
+                minutesDifference = defaultOpenTime + parseInt(Math.abs(getTimezoneOffset));
+            }
+
+            const defaultUTCOpenTime = convertMinToHr(minutesDifference);
+
             // *get user id by email
             let result = await userModel.findOne({
                 email: req.body.email
             });
 
             const appSetting = new appSettingModel({
-                user_id: result._id, 
+                user_id: result._id,  
+                dailyOpenTime: defaultUTCOpenTime,
+                timezoneOffset: getTimezoneOffset
             });
 
             await appSetting.save();
