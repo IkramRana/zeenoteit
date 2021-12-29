@@ -30,7 +30,7 @@ var app = express();
 //var server = require('http').createServer(app);
 
 // *init cron job
-//initJob();
+initJob();
 // *init socket
 //initSocket();
 
