@@ -312,9 +312,52 @@ const checkUncheckSubtask = async (req, res) => {
     }
 }
 
+const deleteSubTask = async (req, res) => {
+    try {
+        
+        // *request body validation
+        const validationRule = {
+            'id': 'required',
+        }
+    
+        validator(req.body, validationRule, {}, (err, status) => {
+            if (!status) {
+                return res.status(412).json({
+                    status: false, responseCode: 412,
+                    message: 'Validation failed', data: err
+                })
+            }
+        });
+
+        let setSubTaskModelQuery = {
+            _id: req.body.id
+        };
+
+        // *delete sub task
+        const deleteSubTaskModel = await subTaskModel.deleteMany( setSubTaskModelQuery );
+
+        if(!deleteSubTaskModel){
+            return res.status(500).json({ 
+                status: false,
+                message: "Unexpected error" 
+            });
+        } else {
+            return res.status(200).json({
+                status: true,
+                message: "Sub Task Deleted Successfully",
+            })
+        }
+
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
+
 module.exports = {
     addSubTask: addSubTask,
     swapSubTask: swapSubTask,
+    deleteSubTask: deleteSubTask,
     checkUncheckSubtask: checkUncheckSubtask,
     getUserSubTaskByTaskId: getUserSubTaskByTaskId,
 }

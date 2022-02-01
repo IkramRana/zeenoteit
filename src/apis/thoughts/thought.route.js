@@ -8,11 +8,17 @@ let router = express.Router();
 
 // *Prefix Path --- '/api/thought'
 
-//post
+//get
 router.get('/get-thought', auth.validate, thoughtCtrl.getThought);
-router.post('/add-thought', auth.validate, thoughtCtrl.addThought);
 router.get('/get-thought-by', auth.validate, thoughtCtrl.getThoughtById);
+
+//post
+router.post('/add-thought', auth.validate, thoughtCtrl.addThought);
+
+//patch
 router.patch('/update-thought', auth.validate, thoughtCtrl.updateThought);
+
+//delete
 router.delete('/delete-thought', auth.validate, thoughtCtrl.deleteThought);
 
 module.exports = router;

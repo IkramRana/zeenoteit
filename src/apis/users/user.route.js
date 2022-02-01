@@ -15,6 +15,8 @@ router.post('/userExist', userCtrl.userExist);
 router.post('/verifyToken', userCtrl.verifyToken);
 router.post('/logout', auth.validate, userCtrl.logout);
 router.post('/checkUserEmailAndPhone', userCtrl.checkUserEmailAndPhone);
+
+//patch
 router.patch('/deactivateAccount', auth.validate, userCtrl.deactivateAccount);
 
 module.exports = router;

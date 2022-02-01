@@ -8,6 +8,7 @@ let router = express.Router();
 
 // *Prefix Path --- '/api/app-setting'
 
+//patch
 router.patch('/updateSetting', auth.validate, appSettingCtrl.updateSetting);
 
 
