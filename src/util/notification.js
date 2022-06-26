@@ -56,7 +56,7 @@ const init = async () => {
         console.log('file: notification.js => line 56 => init => currentTotalMinutes', currentTotalMinutes); 
 
         // *split current time
-        let currentTime = d.toLocaleTimeString('en-GB');
+        let currentTime = convertMinToHr(currentTotalMinutes);//d.toLocaleTimeString('en-GB');
         let splitCurrentTime = currentTime.split(':');
         let currentHour = splitCurrentTime[0];
         let currentMinute = splitCurrentTime[1];
