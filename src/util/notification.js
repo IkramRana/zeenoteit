@@ -1,7 +1,7 @@
 'use strict';
 
 var { updateArray } = require('../services/socket');
-var { getMinHrFromString,getMinFromString } = require('./helper');
+var { getMinHrFromString,getMinFromString,convertMinToHr } = require('./helper');
 const { sendNotification } = require("../services/firebase.service");
 
 let userModel = require('../apis/users/user.model');
@@ -31,9 +31,9 @@ const init = async () => {
 
         // *if daily user's notification count array is empty then fetch from database for socket events
         if(dailyUserNotificationCounts.length === 0){
-            //await updateSocketUserNotificationArray(date);
+            await updateSocketUserNotificationArray(date);
         } else {
-            //updateArray(dailyUserNotificationCounts);
+            updateArray(dailyUserNotificationCounts);
         }
 
         // *if user notification array is empty then fetch all notifications from database
@@ -56,7 +56,7 @@ const init = async () => {
         console.log('file: notification.js => line 56 => init => currentTotalMinutes', currentTotalMinutes); 
 
         // *split current time
-        let currentTime = convertMinToHr(currentTotalMinutes);//d.toLocaleTimeString('en-GB');
+        let currentTime = await convertMinToHr(currentTotalMinutes);//d.toLocaleTimeString('en-GB');
         let splitCurrentTime = currentTime.split(':');
         let currentHour = splitCurrentTime[0];
         let currentMinute = splitCurrentTime[1];
@@ -191,6 +191,9 @@ const init = async () => {
                 console.log('ln 191 -> else');
                 let userCount = 0;
                 let userNotificationNextTime = '';
+
+                console.log("🚀 ~ file: notification.js ~ line 196 ~ updateNotificationLog.map ~ user._id", user._id)
+                console.log("🚀 ~ file: notification.js ~ line 197 ~ updateNotificationLog.map ~ updateNotificationLog", updateNotificationLog)
                 // *execute loop on update notification log array
                 updateNotificationLog.map(async function(notificationLog, index){
                     if(user._id.equals(notificationLog.user_id)){
@@ -199,42 +202,46 @@ const init = async () => {
                     }
                 })
 
+                console.log("🚀 ~ file: notification.js ~ line 205 ~ users.map ~ userNotificationNextTime", userNotificationNextTime)
                 // *get next minute
                 let nextNotificationTotalMinutes = getMinFromString(userNotificationNextTime);
                 console.log('file: notification.js => line 204 => updateNotificationLog.map => nextNotificationTotalMinutes', nextNotificationTotalMinutes);
 
-                if(+currentTotalMinutes >= +nextNotificationTotalMinutes){ 
-                    
-                    // *get last notification order number from user notification log table against this user
-                    let userLastNotificationLog = await getUserLastNotification(user._id);
-
-                    // *if user notification array is empty then fetch all notifications from database
-                    if(userNotifications.length === 0){
-                        await updateUserNotificationArray();
-                    }
-
-                    let notificationOrderNo = (+userLastNotificationLog[0].notification_order_no + 1);
-                    // *execute loop on user notification array
-                    userNotifications.map(async function(userFirstNotification, index){
-                        if(notificationOrderNo === +userFirstNotification.order_no){
-                            let userId = user._id;
-                            let notificationId = userFirstNotification._id;
-                            let notificationTitle = userFirstNotification.type_title;
-                            let notificationBody = userFirstNotification.notification;
-                            let notificationOrderNo = userFirstNotification.order_no;
-                            let lastNotificationTime = d.toLocaleTimeString('en-GB');
-
-                            // *if user exist
-                            if(userCount > 0){
-                                // *call insert & update record function
-                                await insertUserNotificationAndUpdateNotificationLog(userId,notificationId,notificationTitle,notificationBody,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
-                            } else {
-                                // *call insert record function
-                                await insertUserNotificationAndNotificationLog(userId,notificationId,notificationTitle,notificationBody,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
-                            }
+                //if(nextNotificationTotalMinutes != NaN){
+                    if(+currentTotalMinutes >= +nextNotificationTotalMinutes){ 
+                        
+                        // *get last notification order number from user notification log table against this user
+                        let userLastNotificationLog = await getUserLastNotification(user._id);
+                        console.log("🚀 ~ file: notification.js ~ line 215 ~ users.map ~ userLastNotificationLog", userLastNotificationLog)
+    
+                        // *if user notification array is empty then fetch all notifications from database
+                        if(userNotifications.length === 0){
+                            await updateUserNotificationArray();
                         }
-                    });
-                }
+    
+                        let notificationOrderNo = (+userLastNotificationLog[0].notification_order_no + 1);
+                        // *execute loop on user notification array
+                        userNotifications.map(async function(userFirstNotification, index){
+                            if(notificationOrderNo === +userFirstNotification.order_no){
+                                let userId = user._id;
+                                let notificationId = userFirstNotification._id;
+                                let notificationTitle = userFirstNotification.type_title;
+                                let notificationBody = userFirstNotification.notification;
+                                let notificationOrderNo = userFirstNotification.order_no;
+                                let lastNotificationTime = d.toLocaleTimeString('en-GB');
+    
+                                // *if user exist
+                                if(userCount > 0){
+                                    // *call insert & update record function
+                                    await insertUserNotificationAndUpdateNotificationLog(userId,notificationId,notificationTitle,notificationBody,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
+                                } else {
+                                    // *call insert record function
+                                    await insertUserNotificationAndNotificationLog(userId,notificationId,notificationTitle,notificationBody,notificationOrderNo,lastNotificationTime,nextNotificationTime,date);
+                                }
+                            }
+                        });
+                    }
+               // }
             }
         })
     } catch (error) {
@@ -256,7 +263,7 @@ const getUserLastNotification = async (userId) => {
     try {
         let result = await userNotificationLogModel.find({
             user_id: userId
-        }).limit(1).sort({notification_order_no: -1})
+        }).limit(1).sort({creationAt: -1})
         return result;
     } catch (error) {
         console.log('file: notification.js => line 262 => getUserNotifications => error', error);
@@ -474,10 +481,10 @@ const insertUserNotificationAndNotificationLog = async (userId,notificationId,no
         await updateUserNotificationLogArray();
 
         // *update daily user notification counts array
-        //await updateSocketUserNotificationArray(date);
+        await updateSocketUserNotificationArray(date);
 
         // *send push notification
-        await sendPushNotification(userId,notificationTitle,notificationBody);
+        //await sendPushNotification(userId,notificationTitle,notificationBody);
     } catch (error) {
         console.log('file: notification.js => line 482 => insertUserNotificationAndNotificationLog => error', error);
     }
@@ -498,10 +505,10 @@ const insertUserNotificationAndUpdateNotificationLog = async (userId,notificatio
         await updateUserNotificationLogArray();   
 
         // *update daily user notification counts array
-        //await updateSocketUserNotificationArray(date);
+        await updateSocketUserNotificationArray(date);
 
         // *send push notification
-        await sendPushNotification(userId,notificationTitle,notificationBody);
+        //await sendPushNotification(userId,notificationTitle,notificationBody);
     } catch (error) {
         console.log('file: notification.js => line 506 => insertUserNotificationAndUpdateNotificationLog => error', error);
     }

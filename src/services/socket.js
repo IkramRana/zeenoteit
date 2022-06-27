@@ -1,7 +1,9 @@
 
+//const origin = "http://localhost:3002";
+// const origin = "http://app.zenoteit.com:3002";
 const io = require('socket.io')(3019,{
     cors: {
-        origin: "http://localhost:3001",
+        origin: "http://localhost:3002",
         methods: ["GET", "POST"]
     }
 });
@@ -11,30 +13,15 @@ var userCount = 0;
 var obj = {};
 
 const updateArray = (obj) => {
-    //console.log('file: socket.js => line 12 => obj', obj);
     userNotifications = [];
     obj.map(function(val, index){
         // *push result to  user notification array
         userNotifications.push(val);
     });
-    console.log('file: socket.js => line 18 => obj.map => userNotifications', userNotifications);
-    //initSocket();
+    console.log("🚀 ~ file: socket.js ~ line 20 ~ obj.map ~ userNotifications", userNotifications)
 }
 
 initSocket = () => { 
-    //console.log('file: socket.js => line 23 => server', server);
-
-    // const io = require('socket.io')(server,{
-    //     cors: {
-    //         origin: "http://localhost:3001",
-    //         methods: ["GET", "POST"]
-    //     }
-    // });
-
-    //server.listen(3019);
-    // const io = require('socket.io')(server)
-
-
     // Add a connect listener
     io.on('connection', function (socket) {
 
@@ -70,7 +57,3 @@ module.exports = {
     updateArray,
     initSocket
 }
-
-
-
-//server.listen(3001);
