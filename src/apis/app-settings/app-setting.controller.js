@@ -83,9 +83,12 @@ const updateSetting = async (req, res) => {
 
       setAppSettingModelQuery.dailyOpenTime = setUTCOpenTime;
     }
-    if (dailyTimeInterval)
+    if (dailyTimeInterval) {
       setAppSettingModelQuery.dailyTimeInterval = dailyTimeInterval;
-    if (isNotifyEnable) setAppSettingModelQuery.isNotifyEnable = isNotifyEnable;
+    }
+    if (isNotifyEnable) {
+      setAppSettingModelQuery.isNotifyEnable = isNotifyEnable;
+    }
 
     // *update user
     const updateUser = await userModel.findOneAndUpdate(
