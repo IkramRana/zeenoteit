@@ -10,6 +10,9 @@ var {
 } = require("../../util/helper");
 var errorHandler = require("../../util/errorHandler");
 const axios = require("axios");
+const moment = require("moment");
+var momentx = require('moment-timezone');
+
 
 const updateSetting = async (req, res) => {
   try {
@@ -71,17 +74,25 @@ const updateSetting = async (req, res) => {
       const getTimezoneOffset = timezoneOffset; //date.getTimezoneOffset();
       const openTimeMinutes = getMinFromString(dailyOpenTime);
       let minutesDifference = 0;
-
       if (getTimezoneOffset < 0) {
         minutesDifference =
           openTimeMinutes - parseInt(Math.abs(getTimezoneOffset));
+          var timeCalculate = moment(dailyOpenTime, "HH:mm").subtract(Math.abs(getTimezoneOffset), "minutes").format("HH:mm");
+
+          
       } else {
         minutesDifference =
           openTimeMinutes + parseInt(Math.abs(getTimezoneOffset));
+        var timeCalculate = moment(dailyOpenTime, "HH:mm").add(Math.abs(getTimezoneOffset), "minutes").format("HH:mm");
+        
+
       }
       const setUTCOpenTime = await convertMinToHr(minutesDifference);
 
-      setAppSettingModelQuery.dailyOpenTime = setUTCOpenTime;
+
+
+
+      setAppSettingModelQuery.dailyOpenTime = timeCalculate;
     }
     
     if (dailyTimeInterval) {

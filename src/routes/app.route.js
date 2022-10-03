@@ -12,6 +12,7 @@ let colorsRoutes = require('../apis/colors/color.route');
 let passwordResetRoutes = require('../apis/password-reset/token.route');
 let appSettings = require('../apis/app-settings/app-setting.route');
 let notification = require('../apis/notifications/notification-route');
+let plans = require('../apis/payments/payment.route');
 
 let router = express.Router();
 
@@ -25,5 +26,6 @@ router.use('/color', colorsRoutes);
 router.use('/password-reset', passwordResetRoutes);
 router.use('/app-settings', appSettings);
 router.use('/notification', notification);
+router.use('/plans', plans);
 
 module.exports = router;

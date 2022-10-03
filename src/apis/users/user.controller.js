@@ -3,11 +3,12 @@
 let userModel = require('./user.model');
 let appSettingModel = require('../app-settings/app-setting.model');
 let firebaseToken = require('../firebase-token/firebase-token.model');
+let Stripe = require('../../../config/stripe-config');
 var { encryptText,comparePassword } = require('../../services/app.services');
 var jwt = require('../../services/jwt.service');
 var { validator,convertMinToHr,getMinFromString } = require('../../util/helper');
 var errorHandler = require('../../util/errorHandler');
-
+var moment = require("moment")
 
 const login = async (req, res) => {
     try {
@@ -30,6 +31,7 @@ const login = async (req, res) => {
         let result = await userModel.findOne({
             email: req.body.email
         });
+
         
         // *if input wrong credentials 
         if (!result) {
@@ -45,6 +47,13 @@ const login = async (req, res) => {
                     status: false,
                     message: 'Your Account is deactivated!, Contact us for further process'
                 }) 
+            }
+
+            if(result.plan_expiry < Date.now()){
+                const updateUserModel = await userModel.findOneAndUpdate(
+                    { _id: result._id }, 
+                    { $set: {plan_active: false} }
+                )
             }
 
             let searchQuery = {};
@@ -83,16 +92,20 @@ const login = async (req, res) => {
             const getTimezoneOffset = data[0].appSettings[0].timezoneOffset;//date.getTimezoneOffset();
             const defaultUTCOpenTime = getMinFromString(data[0].appSettings[0].dailyOpenTime);
             let minutesDifference = 0;
-
+            var openTime = data[0].appSettings[0].dailyOpenTime;
             if(getTimezoneOffset < 0) {
                 minutesDifference = defaultUTCOpenTime + parseInt(Math.abs(getTimezoneOffset));
+                var timeCalculate = moment(openTime, "HH:mm").add(Math.abs(getTimezoneOffset), "minutes").format("HH:mm");
+
             } else {
                 minutesDifference = defaultUTCOpenTime - parseInt(Math.abs(getTimezoneOffset));
+                var timeCalculate = moment(openTime, "HH:mm").subtract(Math.abs(getTimezoneOffset), "minutes").format("HH:mm");
+
             }
 
             const defaultOpenTime = await convertMinToHr(minutesDifference);
             // *set open time from utc to users gmt according
-            data[0].appSettings[0].dailyOpenTime = defaultOpenTime;
+            data[0].appSettings[0].dailyOpenTime = timeCalculate;
 
             // *compare db password with request body password
             let compare_result = await comparePassword(req.body.password, result.password);
@@ -100,7 +113,8 @@ const login = async (req, res) => {
             // *generate JsonWebToken
             let token = await jwt.generateToken({
                 id: result._id,
-                email: result.email
+                email: result.email,
+                plan_active: result.plan_active
             }, 'login');
 
             //* if password / token successful
@@ -187,12 +201,21 @@ const register = async (req, res) => {
                 })
             }
         });
+
+       
         
         // *extract param from request body
         const { email, password, country_code ,phone_number, isNumberVerified, timezoneOffset } = req.body;
 
         // *encrypt incoming password
         const hashPassword = await encryptText(password);
+
+        // *create customer is Stripe
+        const customer = await Stripe.customers.create({
+        email: email,
+        phone: phone_number,
+        description: `${email} customer created for Zeenoteit Subscription`
+        });
         
         // *create obj for db insert
         let obj = {
@@ -201,6 +224,8 @@ const register = async (req, res) => {
             countryCode: country_code,
             phone_number: phone_number,
             isNumberVerified: isNumberVerified,
+            stripe_customerId: customer.id,
+
         }
         
         // *insert

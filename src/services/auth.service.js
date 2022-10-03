@@ -16,6 +16,8 @@ module.exports = {
 
                 const decoded = await service.verifyToken(token);
 
+                // *check if user subscription plan is active     
+                if (!decoded.plan_active && !req.originalUrl.includes("plans")) return res.status(401).json({ message: 'User Membership Expired.' });
                 // *if can verify the token, set req.user and pass to next middleware
                 let result = await userModel.findOne({
                     _id: decoded.id

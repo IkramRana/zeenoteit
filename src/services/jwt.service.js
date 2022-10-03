@@ -23,7 +23,7 @@ const verifyToken = async token => {
         let result = await jwt.verify(token, process.env.JWT_SECRET_KEY);
         return result;
     } catch (error) {
-        return error;
+        return res.status(401).json({ message: 'Invalid token.' });
     }
 }
 

@@ -31,6 +31,30 @@ const UserSchema = new mongoose.Schema({
     default: true,
   },
   access_token: String,
+
+  stripe_customerId: {
+    type: String
+  },
+  plan_identifier: {
+    type: String,
+    default: null
+  },
+  plan_active: {
+    type: Boolean,
+    default: false
+  },
+  plan_expiry: {
+    type: Date,
+    default: Date.now
+  },
+  plan_subscriptionId: {
+    type: String,
+    default: null
+  },
+  trial_used: {
+    type: Boolean,
+    default: false
+  },
   creationAt: {
     type: Date,
     default: Date.now
