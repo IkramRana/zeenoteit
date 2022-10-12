@@ -9,6 +9,7 @@ var jwt = require('../../services/jwt.service');
 var { validator,convertMinToHr,getMinFromString } = require('../../util/helper');
 var errorHandler = require('../../util/errorHandler');
 var moment = require("moment")
+const { ObjectId } = require("mongodb");
 
 const login = async (req, res) => {
     try {
@@ -407,6 +408,49 @@ const checkUserEmailAndPhone = async (req,res) => {
         return res.status(500).json(error)
     }
 }
+const getUserDetails = async (req,res) => {
+    try {
+        let token = req.headers['x-access-token'] || req.headers.authorization;
+        let searchQuery = {};
+        searchQuery["_id"] = ObjectId(req.user.id);
+        let data = await userModel.aggregate([
+            { $match: searchQuery },
+            {
+                $lookup: {
+                    from: 'app_settings',
+                    localField: '_id',
+                    foreignField: 'user_id',
+                    as: 'appSettings',
+                },
+            },
+            {
+                $project: {
+                    password: false,
+                    isNumberVerified: false,
+                    isActive: false,
+                    creationAt: false,
+                    updatedAt: false,
+                    __v: false,
+                    "appSettings._id": false,
+                    "appSettings.user_id": false,
+                    "appSettings.creationAt": false,
+                    "appSettings.updatedAt": false,
+                    "appSettings.__v": false,
+                }
+            }
+        
+        ])
+       // *success return
+       return res.json({ 
+        status: true,
+        user:data
+    });
+
+    } catch (err) {
+        let error = errorHandler.handle(err)
+        return res.status(500).json(error)
+    }
+}
 
 module.exports = {
     login: login,
@@ -416,4 +460,5 @@ module.exports = {
     verifyToken: verifyToken,
     deactivateAccount: deactivateAccount,
     checkUserEmailAndPhone: checkUserEmailAndPhone,
+    getUserDetails:getUserDetails
 }

@@ -51,18 +51,18 @@ const generateSubscriptionId = async (req, res) => {
             expand: ['latest_invoice.payment_intent'],
           });
 
-          let setUserModelQuery = {
+        //   let setUserModelQuery = {
 
-            plan_identifier: "paid.gold",
-            plan_subscriptionId: subscription.id
+        //     plan_identifier: "paid.gold",
+        //     plan_subscriptionId: subscription.id
 
-        };
+        // };
 
         // *update account for payment information
-        const updateUserModel = await userModel.findOneAndUpdate(
-            { _id: req.user.id }, 
-            { $set: setUserModelQuery }
-        )
+        // const updateUserModel = await userModel.findOneAndUpdate(
+        //     { _id: req.user.id }, 
+        //     { $set: setUserModelQuery }
+        // )
 
         return res.status(200).json({ status: true,cs_key: subscription.latest_invoice.payment_intent.client_secret, public_key: process.env.STRIPE_PUBLISHABLE_KEY });
 
