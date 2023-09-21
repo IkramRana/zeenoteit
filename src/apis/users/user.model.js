@@ -51,6 +51,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  plan_receipt: {
+    type: String,
+    default: null
+  },
   trial_used: {
     type: Boolean,
     default: false

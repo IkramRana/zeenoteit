@@ -5,6 +5,7 @@ var errorHandler = require('../../util/errorHandler');
 var mongoose = require('mongoose');
 var moment = require('moment');
 let Stripe = require('../../../config/stripe-config');
+let AppleVerify = require('../../../config/apple-pay-config');
 var jwt = require('../../services/jwt.service');
 
 
@@ -47,7 +48,7 @@ const generateSubscriptionId = async (req, res) => {
               price: process.env.STRIPE_PRICE_ID,
             }],
             payment_behavior: 'default_incomplete',
-            payment_settings: { save_default_payment_method: 'on_subscription' },
+            payment_settings: { save_default_payment_method: 'on_subscription', payment_method_types: ["card","gpay","googlepay","applepay"] },
             expand: ['latest_invoice.payment_intent'],
           });
 
@@ -75,24 +76,36 @@ const generateSubscriptionId = async (req, res) => {
 
 const validatePayment = async (req, res) => {
     try {
-       
 
-        const subscription = await Stripe.subscriptions.retrieve(
-            req.user.plan_subscriptionId
-          );
-
-        if(subscription.status != "active"){
-            return res.status(400).json({ status: false,message: 'Payment not completed.' });
-        }
-
-          let setUserModelQuery = {
+        let setUserModelQuery = {
             plan_active: true,
             plan_expiry: moment().add(30,"days").toDate(),
             trial_used: true,
             plan_identifier: "paid.gold",
-      
-
         };
+
+        if (req.body.flag == "apple") {
+            const validPay = await AppleVerify.validate({
+                receipt: req.body.receipt,
+              });
+
+              if (validPay.status != "active") {
+                return res.status(400).json({ status: false,message: 'Payment not completed.' });
+              }
+
+              setUserModelQuery["plan_receipt"] = req.body.receipt;
+        }
+        else{
+            const subscription = await Stripe.subscriptions.retrieve(
+                req.user.plan_subscriptionId
+              );
+    
+            if(subscription.status != "active"){
+                return res.status(400).json({ status: false,message: 'Payment not completed.' });
+            }
+    
+        }
+
 
         // *update account
         const updateUserModel = await userModel.findOneAndUpdate(
