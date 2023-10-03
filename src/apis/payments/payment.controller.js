@@ -85,15 +85,15 @@ const validatePayment = async (req, res) => {
         };
 
         if (req.body.flag == "apple") {
-            const validPay = await AppleVerify.validate({
-                receipt: req.body.receipt,
-              });
+            // const validPay = await AppleVerify.validate({
+            //     receipt: req.body.receipt,
+            //   });
 
-              if (validPay.status != "active") {
-                return res.status(400).json({ status: false,message: 'Payment not completed.' });
-              }
+            //   if (validPay.status != "active") {
+            //     return res.status(400).json({ status: false,message: 'Payment not completed.' });
+            //   }
 
-              setUserModelQuery["plan_receipt"] = req.body.receipt;
+            //   setUserModelQuery["plan_receipt"] = req.body.receipt;
         }
         else{
             const subscription = await Stripe.subscriptions.retrieve(
