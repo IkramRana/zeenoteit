@@ -4,6 +4,6 @@ const APPLE_SECRET_KEY = process.env.APPLE_SECRET_KEY
 
 const AppleVerify = appleReceiptVerify.config({
     secret: APPLE_SECRET_KEY,
-    environment: [process.env.APPLE_ENVIROMENT]
+    environment: [process.env.APPLE_ENVIRONMENT]
 });
 module.exports = AppleVerify
