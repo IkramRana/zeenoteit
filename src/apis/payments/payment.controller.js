@@ -76,7 +76,7 @@ try{
 
         // plan_identifier: "paid.gold",
         plan_subscriptionId: subscription.id,
-        stripe_customerId = req.user.stripe_customerId
+        stripe_customerId : req.user.stripe_customerId
 
     };
 
